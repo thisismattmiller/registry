@@ -1,0 +1,29 @@
+{
+    "analyze": true,
+    "author": "",
+
+    "contributors": [
+        {
+            "email": "",
+            "name": ""
+        }
+    ],
+    "dependencies": {
+        "JSONStream": "0.10.0",
+        "event-stream": "3.2.2",
+        "config": "1.12.0"
+    },
+    "devDependencies": {
+        "mocha": "2.1.0",
+        "should": "5.0.1"
+    },
+    "scripts":{
+      "test" : "mocha test"
+    },
+    "description": "",
+    "license": "MIT",
+    "name": "registry",
+    "preferGlobal": false,
+    "private": true,
+    "version": "0.0.1"
+}
