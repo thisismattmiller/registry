@@ -1,7 +1,9 @@
 {
   "Storage": {
     "outputPaths": {
-      "mms": "/Users/matt/Desktop/data/output_mms/"
+      "mms": "/Users/matt/Desktop/data/output_mms/",
+      "archives" : "/Users/matt/Desktop/data/archives/",
+      "exceptions" : "/Users/matt/Desktop/data/exceptions/"
 
     }
   }
