@@ -5,8 +5,10 @@ var exports = module.exports = {}
 
 exports.normalize = function(input){
 
+	if (!input) return false
 
-	if (typeof input !== 'string') return input
+	//force to string
+	input = input.toString()
 
 	input = input.toLowerCase()
 

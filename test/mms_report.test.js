@@ -37,38 +37,27 @@ describe('mmsReport', function () {
 	})
 	
 
+	it('should split the mms export into seperate files based on division', function (done) {
 
-	describe('mmsReport#fileSplit', function () {
+		
+		mmsReport.process("./test/data/mms_test.json", "./test/data/", function(){
 
-
-		before(function() {
-
-			mmsReport.process("./test/data/mms_test.json", "./test/data/")
-
-		})
-
-		it('should split the mms export into seperate files based on division', function () {
-
+			var fs = require('fs');
 			
-			mmsReport.process("./test/data/mms_test.json", "./test/data/", function(){
-				var fs = require('fs');
-				
-				var expected = ["rbk","map","rha","nodiv","brg","report"]
+			var expected = ["rbk","map","rha","nodiv","brg","report"]
 
-				//try deleteing them, if they were not created/split then they will error out
-				for (var x in expected){
-					var r = fs.unlinkSync("./test/data/" + expected[x] + ".json");
-				}
+			//try deleteing them, if they were not created/split then they will error out
+			for (var x in expected){
+				var r = fs.unlinkSync("./test/data/" + expected[x] + ".json");
+			}
 
-			})
-
-
+			done()
 
 		})
+
 
 
 	})
-
 
 
 })

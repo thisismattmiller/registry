@@ -14,7 +14,9 @@
         "config": "1.12.0",
         "string": "3.0.0 ",
         "find-remove" : "0.2.5",
-        "glob": "5.0.3"
+        "glob": "5.0.3",
+        "libxmljs" : "0.13.0",
+        "async" : "0.9.0"
     },
     "devDependencies": {
         "mocha": "2.1.0",

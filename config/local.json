@@ -1,10 +1,108 @@
 {
   "Storage": {
     "outputPaths": {
-      "mms": "/Users/matt/Desktop/data/output_mms/",
-      "archives" : "/Users/matt/Desktop/data/archives/",
-      "exceptions" : "/Users/matt/Desktop/data/exceptions/"
+      "mms"         : "/Users/matt/Desktop/data/output_mms/",
+      "archives"    : "/Users/matt/Desktop/data/archives/",
+      "exceptions"  : "/Users/matt/Desktop/data/exceptions/"
 
     }
+  },
+
+
+  "Thesaurus" : {
+
+    "archives" : {
+      "local_call"    : "callNumber",
+      "local_mss"     : "mss",
+      "local_b"       : "bNumber",
+      "local_barcode" : "barcode",
+      "call_number"   : "callNumber",
+      "portal_id"     : "mssDb",
+      "bnumber"       : "bNumber"
+    },
+
+    "mms" : {
+      "local_hades"                        : "hades",
+      "local_tms_object_number"            : "tmsObject",
+      "local_tms_id"                       : "tmsId",
+      "local_barcode"                      : "barcode",
+      "local_bnumber"                      : "bNumber",
+      "local_catnyp"                       : "catnyp",
+      "local_mss"                          : "mss",
+      "local_photo_order"                  : "publicOrder",
+      "local_hades_collection"             : "hadesCollection",
+      "local_imageid"                      : "imageId",
+      "local_exhibition"                   : "exhibition",
+      "lccn"                               : "lccn",
+      "Hades struc ID (legacy)"            : "hades",
+      "TMS Object Number"                  : "tmsObject",
+      "TMS ID"                             : "tmsId",
+      "Barcode"                            : "barcode",
+      "Other local Identifier"             : "other",
+      "NYPL catalog ID (B-number)"         : "bNumber",
+      "CATNYP ID (legacy)"                 : "catnyp",
+      "RLIN/OCLC"                          : "oclc",
+      "accession number"                   : "accession",
+      "Photo Order"                        : "publicOrder",
+      "Hades Collection Guide ID (legacy)" : "hadesCollection",
+      "Digital Gallery Image ID"           : "imageId",
+      "Archives components id"             : "mss",
+      "Dynix"                              : "dynix",
+      "NYPL Exhibition ID"                 : "exhibition",
+      "Orphan image"                       : "orphan",
+      "Accession number"                   : "accession",
+      "MSS Unit ID"                        : "mss",
+      "Archives Item id"                   : "mss",
+      "Library of Congress Control Number" : "lccn",
+      "identifier_local_TMS"               : "tmsId",
+      "Emmet number"                       : "emmet"
+    }
+
+
+
+
+  },
+
+  "MMSDivisions" : {
+
+    "all": ["arn","art","bg","brg","childctr","cps","dan","danmia","epecsw","external","grd","hv","jws","lhg","map","mmpc","mss","mus","nodiv","pbl","phg","prn","rbk","rha","scf","scg","scm","scr","spn","the","undefined","unk"],
+
+    "divisions": {
+
+
+      "arn" :      { "name" : "George Arents Collection",                                   "processArchivesCollections" : true    },
+      "art" :      { "name" : "Wallach Division: Art & Architecture Collection",            "processArchivesCollections" : false   },
+      "bg" :       { "name" : "SIBL: General collection",                                   "processArchivesCollections" : true    },
+      "brg" :      { "name" : "Berg Collection",                                            "processArchivesCollections" : false   },
+      "childctr" : { "name" : "Children's Center at 42nd St",                               "processArchivesCollections" : false   },
+      "cps" :      { "name" : "Pforzheimer Collection",                                     "processArchivesCollections" : true    },
+      "dan" :      { "name" : "Jerome Robbins Dance Division",                              "processArchivesCollections" : true    },
+      "danmia" :   { "name" : "Jerome Robbins Dance Division - Moving Image",               "processArchivesCollections" : true    },
+      "epecsw" :   { "name" : "Dorothy and Lewis B. Cullman Center for Scholars & Writers", "processArchivesCollections" : true    },
+      "external" : { "name" : "External, not NYPL",                                         "processArchivesCollections" : false   },
+      "grd" :      { "name" : "General Research Division",                                  "processArchivesCollections" : true    },
+      "hv" :       { "name" : "Slavic and East European Collections",                       "processArchivesCollections" : true    },
+      "jws" :      { "name" : "Dorot Jewish Division",                                      "processArchivesCollections" : true    },
+      "lhg" :      { "name" : "Milstein Division",                                          "processArchivesCollections" : true    },
+      "map" :      { "name" : "Map Division",                                               "processArchivesCollections" : false   },
+      "mmpc" :     { "name" : "Art and Picture Collection",                                 "processArchivesCollections" : false   },
+      "mss" :      { "name" : "Manuscripts and Archives Division",                          "processArchivesCollections" : true    },
+      "mus" :      { "name" : "Music Division",                                             "processArchivesCollections" : true    },
+      "nodiv" :    { "name" : "No Division",                                                "processArchivesCollections" : true    },
+      "pbl" :      { "name" : "Comm, Marketing, and Business Dev",                          "processArchivesCollections" : false   },
+      "phg" :      { "name" : "Wallach Division: Photography Collection",                   "processArchivesCollections" : false   },
+      "prn" :      { "name" : "Wallach Division: Print Collection",                         "processArchivesCollections" : false   },
+      "rbk" :      { "name" : "Rare Book Division",                                         "processArchivesCollections" : true    },
+      "rha" :      { "name" : "Rodgers and Hammerstein Archives of Recorded Sound",         "processArchivesCollections" : true    },
+      "scf" :      { "name" : "Schomburg Art and Artifacts Division",                       "processArchivesCollections" : false   },
+      "scg" :      { "name" : "Schomburg Photographs and Prints Division",                  "processArchivesCollections" : false   },
+      "scm" :      { "name" : "Schomburg Manuscripts, Archives and Rare Books Division",    "processArchivesCollections" : true    },
+      "scr" :      { "name" : "Schomburg General Research and Reference Division",          "processArchivesCollections" : true    },
+      "spn" :      { "name" : "Spencer Collection",                                         "processArchivesCollections" : true    },
+      "the" :      { "name" : "Billy Rose Theatre Division",                                "processArchivesCollections" : true    },
+      "undefined": { "name" : "Undefined",                                                  "processArchivesCollections" : true    },
+      "unk" :      { "name" : "Unknown",                                                    "processArchivesCollections" : true    }
+    }
+
   }
 }

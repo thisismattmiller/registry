@@ -10,10 +10,8 @@
 var fs = require('fs'),
   JSONStream = require('JSONStream'),
   es = require('event-stream'),
-  config = require("config")
-  
-
-
+  config = require("config"),
+  exceptionReport = require("../util/exception_report.js")
 
 
 var exports = module.exports = {}
@@ -28,13 +26,13 @@ exports.process = function(pathToMMSExport, outputPath, cb){
 
 
 	//path to the data dir if it is not passed then use the config setting
-	var mms_out = (outputPath) ? outputPath : config.get('Storage')['outputPaths']['mms']
+	var mms_out = (outputPath) ? outputPath : config.get('MMSDivisions')['outputPaths']['mms']
 
 	var recordCount = 0
 
 	var outBuffer = {}
 
-
+	var allDivsions = config.get('MMSDivisions')['all']
 
 	var stream = fs.createReadStream(pathToMMSExport, {encoding: 'utf8'}),
 		parser = JSONStream.parse('*'),
@@ -50,6 +48,12 @@ exports.process = function(pathToMMSExport, outputPath, cb){
 			//make a filename safe divsion code
 			var division = exports.countDivision(data).toLowerCase().replace(/[\.,-\/#!$%\^&\*;:{}=\-_`~()\[\]]/g,"")
 			exports.countHashFields(data)
+
+			
+			//make sure we know all the divsions, set a log to warn if we do not
+			if (allDivsions.indexOf(division) == -1) {
+				exceptionReport.log("split mms","new division",data)
+			}
 
 			//split it into seperate files based on division 
 
@@ -78,8 +82,6 @@ exports.process = function(pathToMMSExport, outputPath, cb){
 
 	//this event happens when the file has been completely read, when that happens empty out any leftover data in the buffer
 	parser.on('end', function(obj) {
-
-
 
 		for (var x in outBuffer){
 
@@ -117,11 +119,6 @@ exports.process = function(pathToMMSExport, outputPath, cb){
 
 	})
 		
-	
-
-
-
-
 	//kick it off, pipe the data to the json parser to the data processor function processData
 	stream.pipe(parser).pipe(processData)
 

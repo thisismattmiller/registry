@@ -30,20 +30,7 @@ exports.log = function(operation,type,data){
 }
 
 exports.deleteAll = function(){
-
 	var result = findRemoveSync(path, {extensions: ['.txt']})
-
-}
-exports.deleteType = function(operation){
-
-	operation = operation.replace(/\s/g,'_')
-	operation = utils.normalize(operation)
-
-	var files = glob(path + operation + "*", {sync:true})
-	for (var x in files){
-		var result = findRemoveSync(path, {files: files[x].replace(path,"") })
-	}	
-
 }
 
 exports.deleteOperation = function(operation){
@@ -57,5 +44,17 @@ exports.deleteOperation = function(operation){
 		var result = findRemoveSync(path, {files: files[x].replace(path,"") })
 	}	
 
+
+}
+
+exports.deleteType = function(type){
+
+	type = type.replace(/\s/g,'_')
+	type = utils.normalize(type)
+
+	var files = glob(path + "*." + type + ".txt", {sync:true})
+	for (var x in files){
+		var result = findRemoveSync(path, {files: files[x].replace(path,"") })
+	}	
 
 }

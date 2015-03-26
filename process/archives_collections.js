@@ -16,7 +16,10 @@ var fs = require('fs'),
 var exports = module.exports = {}
 
 var archivesCollections = {}
-var types = []
+
+//we use this to convert the varying identifier names used across the systems to a single vocab
+var idThesaurus = config.get('Thesaurus')['archives']
+
 
 exports.loadData = function(dataSource, cb){
 
@@ -27,82 +30,7 @@ exports.loadData = function(dataSource, cb){
 	var processData = es.map(function (data, callback) {
 
 
-		if (data['id'] && data['active']){
-
-			archivesCollections[data['id']] = {'local_call': false, 'local_mss': false, 'local_b': false, 'local_barcode': false, 'matched':false}
-
-			if (data['data']){
-
-				var d = data['data']
-
-
-				if (d['unitid']){
-					for (var x in d['unitid']){
-						if (d['unitid'][x]['type'] && d['unitid'][x]['value']){
-							archivesCollections[data['id']][d['unitid'][x]['type']] = d['unitid'][x]['value']
-
-							if (types.indexOf(d['unitid'][x]['type'])==-1){
-								types.push(d['unitid'][x]['type'])
-							}
-						}
-					}
-				}
-
-				if (d['keydate']){
-					archivesCollections[data['id']]['keydate'] = d['keydate']
-				}else{
-					archivesCollections[data['id']]['keydate'] = false
-				}
-
-				if (d['date_inclusive_start']){
-					archivesCollections[data['id']]['date_inclusive_start'] = d['date_inclusive_start']
-				}else{
-					archivesCollections[data['id']]['date_inclusive_start'] = false
-				}
-
-				if (d['date_inclusive_end']){
-					archivesCollections[data['id']]['date_inclusive_end'] = d['date_inclusive_end']
-				}else{
-					archivesCollections[data['id']]['date_inclusive_end'] = false
-				}
-
-			}
-
-			if (data['bnumber']){
-				archivesCollections[data['id']]['bnumber'] = data['bnumber']
-			}else{
-				archivesCollections[data['id']]['bnumber'] = false
-			}
-
-			if (data['title']){
-				archivesCollections[data['id']]['title'] = data['title']
-			}else{
-				archivesCollections[data['id']]['title'] = false
-			}
-
-			if (data['call_number']){
-				archivesCollections[data['id']]['call_number'] = data['call_number']
-			}else{
-				archivesCollections[data['id']]['call_number'] = false
-			}
-
-			if (data['origination']){
-				archivesCollections[data['id']]['origination'] = data['origination']
-			}else{
-				archivesCollections[data['id']]['origination'] = false
-			}
-
-			if (data['id']){
-				archivesCollections[data['id']]['portal_id'] = data['id']
-			}else{
-				archivesCollections[data['id']]['portal_id'] = false
-			}
-
-
-
-		}
-
-		
+		exports.extractIds(data)	
 
 
 	})
@@ -111,10 +39,8 @@ exports.loadData = function(dataSource, cb){
 
 	parser.on('end', function(obj) {
 
-		//console.log(archivesCollections)
-
-		if (cb)
-			cb(archivesCollections)
+		//callback and pass the data object in the local namespace
+		if (cb)	cb(archivesCollections)
 
 
 	})
@@ -126,6 +52,94 @@ exports.loadData = function(dataSource, cb){
 }
 
 
+//we modify the large master object in the namespace but also return the ident obj extract for independent use
+exports.extractIds = function(data){
+
+
+
+	if (data['id'] && data['active']){
+
+		archivesCollections[data['id']] = {'callNumber': false, 'mss': false, 'bNumber': false, 'barcode': false, 'matched':false}
+
+		if (data['data']){
+
+			var d = data['data']
+
+
+			if (d['unitid']){
+				for (var x in d['unitid']){
+					if (d['unitid'][x]['type'] && d['unitid'][x]['value']){
+
+						if (d['unitid'][x]['value'] != "")
+							archivesCollections[data['id']][ idThesaurus[d['unitid'][x]['type']] ] = d['unitid'][x]['value']
+
+					}
+				}
+			}
+
+			if (d['keydate']){
+				archivesCollections[data['id']]['keydate'] = d['keydate']
+			}else{
+				archivesCollections[data['id']]['keydate'] = false
+			}
+
+			if (d['date_inclusive_start']){
+				archivesCollections[data['id']]['date_inclusive_start'] = d['date_inclusive_start']
+			}else{
+				archivesCollections[data['id']]['date_inclusive_start'] = false
+			}
+
+			if (d['date_inclusive_end']){
+				archivesCollections[data['id']]['date_inclusive_end'] = d['date_inclusive_end']
+			}else{
+				archivesCollections[data['id']]['date_inclusive_end'] = false
+			}
+
+		}
+
+		if (data['bnumber']){
+			archivesCollections[data['id']][ idThesaurus['bnumber'] ] = data['bnumber']
+		}else{
+			archivesCollections[data['id']][ idThesaurus['bnumber'] ] = false
+		}
+
+		if (data['title']){
+			archivesCollections[data['id']]['title'] = data['title']
+		}else{
+			archivesCollections[data['id']]['title'] = false
+		}
+
+		//only set it if it is not yet set
+		if (data['call_number']){
+			if (!archivesCollections[data['id']][ idThesaurus['call_number'] ]) archivesCollections[data['id']][ idThesaurus['call_number'] ]  = data['call_number']
+		}else{
+			archivesCollections[data['id']][ idThesaurus['call_number'] ] = false
+		}
+
+		if (data['origination']){
+			archivesCollections[data['id']]['origination'] = data['origination']
+		}else{
+			archivesCollections[data['id']]['origination'] = false
+		}
+
+		if (data['id']){
+			archivesCollections[data['id']][ idThesaurus['portal_id'] ] = data['id']
+		}else{
+			archivesCollections[data['id']][ idThesaurus['portal_id'] ] = false
+		}
+
+
+
+	}
+
+	return archivesCollections[data['id']]
+
+
+}
+
+
+//Pass a object with the identifer field to search and the value
+//example: { "bNumber" : "b1234", 'mss' : 1234 }
 exports.matchIdentifier = function(lookFor){
 
 	var results = []
@@ -135,33 +149,17 @@ exports.matchIdentifier = function(lookFor){
 
 		var x = archivesCollections[dbId]
 
-		if (utils.normalize(x['local_call']) == utils.normalize(lookFor)){
-			results.push(x)
-			continue
-		}else if (utils.normalize(x['local_mss']) == utils.normalize(lookFor)){
-			results.push(x)
-			continue
-		}else if (utils.normalize(x['local_b']) == utils.normalize(lookFor)){
-			results.push(x)
-			continue
-		}else if (utils.normalize(x['local_barcode']) == utils.normalize(lookFor)){
-			results.push(x)
-			continue
-		}else if (utils.normalize(x['bnumber']) == utils.normalize(lookFor)){
-			results.push(x)
-			continue
-		}else if (utils.normalize(x['call_number']) == utils.normalize(lookFor)){
-			results.push(x)
-			continue
-		}else if (utils.normalize(x['local_call']) == utils.normalize(lookFor)){
-			results.push(x)
-			continue
-		}
+		for (var key in lookFor){
+			if (x[key]){
 
+				if (utils.normalize(x[key]) == utils.normalize( lookFor[key] )){
+					if (results.indexOf(x)==-1)	results.push(x)
+				}
+			}
+		}
 
 	}
 
-	
 	return results
 }
 
