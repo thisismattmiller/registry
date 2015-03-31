@@ -1,19 +1,16 @@
 "use strict"
 
 var mmsReport = require("../process/mms_report.js");
-var mssProcess = require("../util/mms_process.js")
+var mssProcess = require("../process/mms_process.js")
 var archivesLoad = require("../process/archives_collections.js")
 var exceptionReport = require("../util/exception_report.js")
 
 
 
 
+mmsReport.process("/Users/matt/Downloads/last_import.json")
 
 //mssProcess.
-
-
-
-
 
 
 
@@ -46,7 +43,7 @@ var exceptionReport = require("../util/exception_report.js")
 
 //archivesLoad.matchIdentifier("SADFsad fasd fadsf DSAF &gt; 32423 ~@#$% FDGSDFG Whap whap")
 
-//mmsReport.process("/Users/matt/Downloads/2014-9-3.json")
+//mmsReport.process("/Users/matt/Downloads/last_import.json")
 //mmsReport.process("/Users/matt/Downloads/mms_test.json")
 
 //mmsHiearchy.process("/Users/matt/Downloads/2014-9-3.json")

@@ -5,13 +5,9 @@ var mmsCollectionsToArchivesCollections = require("../jobs/mms_collections_to_ar
 
 describe('mmsCollectionsToArchivesCollections', function () {
 
-
 	it('should load the mms divisions based on the process archives flag or custom array passed', function () {
 
-
 		var r = mmsCollectionsToArchivesCollections.loadDivisionsAbbreviations()
-
-		console.log(r)
 
 		Array.isArray(r).should.equal(true)
 		r.length.should.be.above(10)
@@ -19,19 +15,23 @@ describe('mmsCollectionsToArchivesCollections', function () {
 		mmsCollectionsToArchivesCollections.loadDivisionsReset()
 		var r2 = mmsCollectionsToArchivesCollections.loadDivisionsAbbreviations(['test1','test2'])
 
-		console.log(r2.length)
 		Array.isArray(r2).should.equal(true)
 		r2.length.should.equal(2)
 		r2[0].should.equal('test1')
 
+	})
 
 
-		// r['match'].should.equal(true)
-		// r['matchOn'].indexOf('bNumber').should.equal(0)
+	it('should pass a mms record through the archives collection check and return a match for each', function (done) {
 
-		// r = compare.compareIdentifiersExact(mmsIdents,archivesIdents2)
+		mmsCollectionsToArchivesCollections.loadDivisionsReset()
 
-		// r['match'].should.equal(false)
+		var r = mmsCollectionsToArchivesCollections.loadDivisionsAbbreviations(['mms_test'])
+
+		mmsCollectionsToArchivesCollections.process({pathMms : './test/data/', pathArchives : './test/data/archives_collections.json'}, function(){ done() } )
+
+
+
 
 
 	})

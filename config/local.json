@@ -4,7 +4,10 @@
       "mms"         : "/Users/matt/Desktop/data/output_mms/",
       "archives"    : "/Users/matt/Desktop/data/archives/",
       "exceptions"  : "/Users/matt/Desktop/data/exceptions/"
-
+    },
+    "extracts" : {
+      "base"                : "/Users/matt/Desktop/data/extracts/",
+      "archivesCollections" : "archives_collections.json"
     }
   },
 
@@ -65,7 +68,7 @@
 
   "MMSDivisions" : {
 
-    "all": ["arn","art","bg","brg","childctr","cps","dan","danmia","epecsw","external","grd","hv","jws","lhg","map","mmpc","mss","mus","nodiv","pbl","phg","prn","rbk","rha","scf","scg","scm","scr","spn","the","undefined","unk"],
+    "all": ["arn","art","bg","brg","childctr","cps","dan","danmia","epecsw","external","grd","hv","jws","lhg","map","mmpc","mss","mus","nodiv","pbl","phg","prn","rbk","rha","scf","scg","scm","scr","spn","the","undefined","unk","mms_test"],
 
     "divisions": {
 
@@ -102,6 +105,7 @@
       "the" :      { "name" : "Billy Rose Theatre Division",                                "processArchivesCollections" : true    },
       "undefined": { "name" : "Undefined",                                                  "processArchivesCollections" : true    },
       "unk" :      { "name" : "Unknown",                                                    "processArchivesCollections" : true    }
+
     }
 
   }

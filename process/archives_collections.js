@@ -17,6 +17,16 @@ var exports = module.exports = {}
 
 var archivesCollections = {}
 
+//this holds all the normalized identifiers as keys to do quick lookups before doing more expensive comparsions
+var archivesCollectionsIdentfierIndex = {
+	//we have set nubmer of identifiers that appear in archives collections
+	callNumber 	: {},
+	mss 		: {},
+	bNumber 	: {},
+	barcode 	: {},
+	mssDb 		: {}
+}
+
 //we use this to convert the varying identifier names used across the systems to a single vocab
 var idThesaurus = config.get('Thesaurus')['archives']
 
@@ -28,13 +38,8 @@ exports.loadData = function(dataSource, cb){
 
 	//this is the function that will be called for each data line in the archives export
 	var processData = es.map(function (data, callback) {
-
-
 		exports.extractIds(data)	
-
-
 	})
-
 
 
 	parser.on('end', function(obj) {
@@ -73,6 +78,8 @@ exports.extractIds = function(data){
 						if (d['unitid'][x]['value'] != "")
 							archivesCollections[data['id']][ idThesaurus[d['unitid'][x]['type']] ] = d['unitid'][x]['value']
 
+							archivesCollectionsIdentfierIndex[idThesaurus[d['unitid'][x]['type']]][utils.normalize(d['unitid'][x]['value'])] = 1
+
 					}
 				}
 			}
@@ -99,6 +106,7 @@ exports.extractIds = function(data){
 
 		if (data['bnumber']){
 			archivesCollections[data['id']][ idThesaurus['bnumber'] ] = data['bnumber']
+				archivesCollectionsIdentfierIndex['bNumber'][utils.normalize(data['bnumber'])] = 1
 		}else{
 			archivesCollections[data['id']][ idThesaurus['bnumber'] ] = false
 		}
@@ -112,6 +120,9 @@ exports.extractIds = function(data){
 		//only set it if it is not yet set
 		if (data['call_number']){
 			if (!archivesCollections[data['id']][ idThesaurus['call_number'] ]) archivesCollections[data['id']][ idThesaurus['call_number'] ]  = data['call_number']
+
+			archivesCollectionsIdentfierIndex[idThesaurus['call_number']][utils.normalize(data['call_number'])] = 1
+
 		}else{
 			archivesCollections[data['id']][ idThesaurus['call_number'] ] = false
 		}
@@ -162,6 +173,23 @@ exports.matchIdentifier = function(lookFor){
 
 	return results
 }
+
+//looks to see if this is a possible value in the lookup index, used for fast matching
+//just the value: "b1234568"
+exports.matchIdentifierIndex = function(lookIn,lookFor){
+	
+	if (archivesCollectionsIdentfierIndex[lookIn]){
+
+		if (archivesCollectionsIdentfierIndex[lookIn][lookFor]){
+			return true
+		}else{
+			return false
+		}
+	}else{
+		return false
+	}
+}
+
 
 exports.markAsMatched = function(portal_id){
 

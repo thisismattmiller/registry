@@ -24,8 +24,31 @@ describe('compare', function () {
 		r['matchOn'].indexOf('bNumber').should.equal(0)
 
 		r = compare.compareIdentifiersExact(mmsIdents,archivesIdents2)
-
 		r['match'].should.equal(false)
+
+
+		//with only match on callnumber but diffrent b numbers
+		var a = {"callNumber" : "ABCD", "bNumber" : "b1234567"}
+		var b = {"callNumber" : "ABCD", "bNumber" : "b7654321"}
+
+		r = compare.compareIdentifiersExact(a,b)
+		r['match'].should.equal(false)
+
+		//with only match on callnumber but same b numbers
+		var a = {"callNumber" : "ABCD", "bNumber" : "b1234567"}
+		var b = {"callNumber" : "ABCD", "bNumber" : "b1234567"}
+
+		r = compare.compareIdentifiersExact(a,b)
+		r['match'].should.equal(true)
+
+		//with only match on callnumber no bnumber
+		var a = {"callNumber" : "ABCD"}
+		var b = {"callNumber" : "ABCD"}
+
+		r = compare.compareIdentifiersExact(a,b)
+		r['match'].should.equal(true)
+		r['confidence'].should.equal(0.25)
+
 
 
 	})

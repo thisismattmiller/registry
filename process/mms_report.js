@@ -26,7 +26,7 @@ exports.process = function(pathToMMSExport, outputPath, cb){
 
 
 	//path to the data dir if it is not passed then use the config setting
-	var mms_out = (outputPath) ? outputPath : config.get('MMSDivisions')['outputPaths']['mms']
+	var mms_out = (outputPath) ? outputPath : config.get('Storage')['outputPaths']['mms']
 
 	var recordCount = 0
 
@@ -73,7 +73,16 @@ exports.process = function(pathToMMSExport, outputPath, cb){
 				tmp.write(string + ",")
 				tmp.end()
 			}else{
-				outBuffer[division].push(data)
+
+
+				//we want to limit what goes into the extracts based on dirty data
+				if (data['uuid'] &&  Object.keys(data['solr_doc_hash']).length > 0){
+					outBuffer[division].push(data)
+				}else{
+					exceptionReport.log("split mms","bad record",data)
+				}
+
+				
 			}
 
 

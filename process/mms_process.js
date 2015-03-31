@@ -20,16 +20,33 @@ var exports = module.exports = {}
 //we use this to convert the varying identifier names used across the systems to a single vocab
 var idThesaurus = config.get('Thesaurus')['mms']
 
+//used for testing, so we can point to test files if we need to
+var setPathOverride = false
+
 
 
 
 //stream a file into the action function passing the record to that function
-exports.streamRecords = function(abbreviation, action, cb){
+exports.streamRecords = function(options, asyncCallback){
+
+	if (options.abbreviation) 		var abbreviation = options.abbreviation
+	if (options.action) 			var action = options.action
+
+	//this is a optional call back if this is being called standalone, not by async
+	if (options.unitCb) 			var unitCb = options.unitCb
+
+	//filter on record types
+	if (options.collectionFilter)	var collectionFilter = options.collectionFilter
 
 
 	//load the paths and division ids
 	var allDivsions = config.get('MMSDivisions')['all']
-	var extractPath = config.get('Storage')['outputPaths']['mms']
+
+	if (!setPathOverride){
+		var extractPath = config.get('Storage')['outputPaths']['mms']
+	}else{
+		var extractPath = setPathOverride
+	}
 
 	//return if not a real divsion
 	if (allDivsions.indexOf(abbreviation)==-1){
@@ -52,7 +69,21 @@ exports.streamRecords = function(abbreviation, action, cb){
 	//this is the function that will be called for each data line in the file
 	var processData = es.mapSync(function (data) {
 
-		//console.log(data)
+
+		if (collectionFilter){
+			if (data['d_type']){
+				if (data['d_type'] == 'Collection'){
+
+					action(data)
+				}
+			}else{
+				action(data)
+			}
+		}else{
+			action(data)
+		}
+		//send the data though the function passed to us
+		
 
 
 	})
@@ -62,10 +93,17 @@ exports.streamRecords = function(abbreviation, action, cb){
 	parser.on('end', function(obj) {
 
 
-		//if there is a callback defined, execute
-		if (cb){
-			cb()
+		//if there is a callback defined from a standalone call execute
+		if (unitCb){
+			unitCb()
 		}		
+
+		//if there is a async callback (running in parallel so it needs to exectue for async to know it is totaly finshed)
+		if (asyncCallback){
+			asyncCallback(null,true)
+		}
+
+		return true
 
 	})
 		
@@ -92,6 +130,23 @@ exports.extractIds = function(record){
 		idents['mmsUuid'] = record['uuid']
 	}
 
+
+	if (record['solr_doc_hash']['title']){
+
+		if (record['solr_doc_hash']['title'].length>0){
+			
+			idents['titleAll'] = ""
+
+			for (var x in record['solr_doc_hash']['title']){
+				idents['titleAll']+= record['solr_doc_hash']['title'][x] + ' '
+
+			}
+			idents['titleAll']=idents['titleAll'].trim()
+
+			idents['titleLast'] = record['solr_doc_hash']['title'][record['solr_doc_hash']['title'].length-1].trim()
+		}
+
+	}
 
 	if (record['xml']){
 
@@ -160,105 +215,8 @@ exports.extractIds = function(record){
 }
 
 
-//the main function pass it the path to the export, and where to put the files 
-exports.process = function(pathToMMSExport, outputPath, cb){
-
-
-	//path to the data dir if it is not passed then use the config setting
-	var mms_out = (outputPath) ? outputPath : config.get('MMSDivisions')['outputPaths']['mms']
-
-	var recordCount = 0
-
-	var outBuffer = {}
-
-	var allDivsions = config.get('MMSDivisions')['all']
-
-	var stream = fs.createReadStream(pathToMMSExport, {encoding: 'utf8'}),
-		parser = JSONStream.parse('*'),
-		parserOut = JSONStream.stringify(),
-
-		//this is the function that will be called for each data line in the mms export
-		processData = es.mapSync(function (data) {
-
-
-			process.stdout.write("Record " + recordCount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + "\r")
-			recordCount++
-
-			//make a filename safe divsion code
-			var division = exports.countDivision(data).toLowerCase().replace(/[\.,-\/#!$%\^&\*;:{}=\-_`~()\[\]]/g,"")
-			exports.countHashFields(data)
-
-			
-			//make sure we know all the divsions, set a log to warn if we do not
-			if (allDivsions.indexOf(division) == -1) {
-				exceptionReport.log("split mms","new division",data)
-			}
-
-			//split it into seperate files based on division 
-
-			if (!outBuffer[division]){
-				var tmp = fs.createWriteStream(mms_out + division + ".json", {encoding: 'utf8', flags: "w"})
-				tmp.write("[\n")
-				outBuffer[division] = []
-				tmp.end()
-			}
-
-
-			if (outBuffer[division].length >= 501){		
-				//cut off the array brackets and make new lines for each record so it is more sanse than single infifinity line of json 
-				var string = JSON.stringify(outBuffer[division]).slice(1, -1).replace(/\},\{/gi,"},\n{")
-				outBuffer[division] = []
-				var tmp = fs.createWriteStream(mms_out + division + ".json", {'encoding': 'utf8', 'flags': 'a'})
-				tmp.write(string + ",")
-				tmp.end()
-			}else{
-				outBuffer[division].push(data)
-			}
-
-
-
-		})
-
-	//this event happens when the file has been completely read, when that happens empty out any leftover data in the buffer
-	parser.on('end', function(obj) {
-
-		for (var x in outBuffer){
-
-			var tmp = fs.createWriteStream(mms_out + x + ".json", {'encoding': 'utf8', 'flags': 'a'})
-
-			if (outBuffer[x].length > 0){
-				var string = JSON.stringify(outBuffer[x]).slice(1, -1).replace(/\},\{/gi,"},\n{")
-				tmp.write(string + "\n]")
-			}else{
-				tmp.write("{}" + "\n]")
-			}
-
-			tmp.end()
-		}
-
-		var report = {}
-		report['hashFields'] = hashFields
-		report['divisions'] = divisions
-
-
-
-		fs.writeFile(mms_out + "report.json", JSON.stringify(report, null, 4), function(err) {
-			if(err) {
-				console.log(err)
-			} else {
-				//console.log("JSON saved to " + mms_out + "/report.json")
-			}
-		})
-
-
-		//if there is a callback defined, execute
-		if (cb){
-			cb()
-		}		
-
-	})
-		
-	//kick it off, pipe the data to the json parser to the data processor function processData
-	stream.pipe(parser).pipe(processData)
-
+//override the path if we are testing
+exports.setPathOverride = function(path){
+	setPathOverride = path
 }
+

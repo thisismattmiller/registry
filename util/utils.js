@@ -20,3 +20,21 @@ exports.normalize = function(input){
 	return input
 
 }
+
+//pass a object full of identifers and it will return the values normalized
+exports.normalizeIdents = function(input){
+
+	if (!input) return false
+
+	var results = {}
+
+	for (var x in input){
+
+		results[x] = exports.normalize(input[x])
+
+
+	}
+
+	return results
+
+}

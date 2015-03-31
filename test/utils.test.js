@@ -16,4 +16,20 @@ describe('utils', function () {
 	})
 
 
+	it('should take funky object full of identifiers and normalize all of them', function () {
+	
+
+		var test = { "bNumber" : "b123 456", "callNumber" : "*MAT 98z" };
+
+		test = utils.normalizeIdents(test)
+		
+		test['bNumber'].should.equal("b123456")
+		test['callNumber'].should.equal("*mat98z")
+
+
+
+	})
+
+
+
 })
