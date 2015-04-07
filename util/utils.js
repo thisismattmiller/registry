@@ -38,3 +38,37 @@ exports.normalizeIdents = function(input){
 	return results
 
 }
+
+
+//pass a string and it will make sure it is in bnumber format
+exports.normalizeBnumber = function(bnumber){
+
+	if (!bnumber) return false
+
+	bnumber = bnumber.toString()
+
+	//take off the b for now
+	bnumber = bnumber.replace("b",'')
+
+	//split off any check sum thing
+	bnumber = bnumber.split("~")[0]
+
+	//if it is long (why?) cut off the extra digit
+	if (bnumber.length > 8){
+		bnumber = bnumber.substring(0,8)
+	}
+
+
+	//make sure this is a god damn number because people are sometimes confused what a bnumber should be
+	if ( isNaN(bnumber) ){
+		return false
+	}else{
+		return "b" + bnumber
+	}
+
+	return results
+
+}
+
+
+

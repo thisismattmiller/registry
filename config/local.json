@@ -45,6 +45,7 @@
       "NYPL catalog ID (B-number)"         : "bNumber",
       "CATNYP ID (legacy)"                 : "catnyp",
       "RLIN/OCLC"                          : "oclc",
+      "OCLC/RLIN"                          : "oclc",
       "accession number"                   : "accession",
       "Photo Order"                        : "publicOrder",
       "Hades Collection Guide ID (legacy)" : "hadesCollection",
@@ -58,7 +59,12 @@
       "Archives Item id"                   : "mss",
       "Library of Congress Control Number" : "lccn",
       "identifier_local_TMS"               : "tmsId",
-      "Emmet number"                       : "emmet"
+      "Emmet number"                       : "emmet",
+      "Call number"                        : "callNumber",
+      "Callnumber"                         : "callNumber",
+      "isbn"                               : "isbn",
+      "issn"                               : "issn",
+      "Class mark"                         : "callNumber"
     }
 
 
@@ -68,7 +74,8 @@
 
   "MMSDivisions" : {
 
-    "all": ["arn","art","bg","brg","childctr","cps","dan","danmia","epecsw","external","grd","hv","jws","lhg","map","mmpc","mss","mus","nodiv","pbl","phg","prn","rbk","rha","scf","scg","scm","scr","spn","the","undefined","unk","mms_test"],
+
+    "all": ["arn","art","bg","brg","childctr","cps","dan","danmia","epecsw","external","grd","hv","jws","lhg","map","mmpc","mss","mus","nodiv","nypla","pbl","phg","prn","rbk","rha","scf","scg","scm","scr","spn","the","undefined","unk","mms_test"],
 
     "divisions": {
 
@@ -92,6 +99,7 @@
       "mss" :      { "name" : "Manuscripts and Archives Division",                          "processArchivesCollections" : true    },
       "mus" :      { "name" : "Music Division",                                             "processArchivesCollections" : true    },
       "nodiv" :    { "name" : "No Division",                                                "processArchivesCollections" : true    },
+      "nypla" :    { "name" : "New York Public Library Archives",                           "processArchivesCollections" : true    },
       "pbl" :      { "name" : "Comm, Marketing, and Business Dev",                          "processArchivesCollections" : false   },
       "phg" :      { "name" : "Wallach Division: Photography Collection",                   "processArchivesCollections" : false   },
       "prn" :      { "name" : "Wallach Division: Print Collection",                         "processArchivesCollections" : false   },

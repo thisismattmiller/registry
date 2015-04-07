@@ -2,4 +2,4 @@ var mmsCollectionsToArchivesCollections = require("./jobs/mms_collections_to_arc
 
 
 
-mmsCollectionsToArchivesCollections.process()
+mmsCollectionsToArchivesCollections.process({}, function(data){console.log(JSON.stringify(data,null, 2))})

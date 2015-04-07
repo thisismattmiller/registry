@@ -4,6 +4,7 @@ var mmsProcess = require("../process/mms_process.js"),
 	archivesLoad = require("../process/archives_collections.js"),
 	exceptionReport = require("../util/exception_report.js"),
   	config = require("config"),
+  	fs = require("fs"),
   	async = require("async"),
   	compare = require("../util/compare.js"),
   	utils = require("../util/utils.js")
@@ -17,6 +18,7 @@ var useDivision = []
 
 var pathToMmsExtracts = config.get('Storage')['outputPaths']['mms']
 
+var pathToArchivesOutput = config.get('Storage')['outputPaths']['archives'] + 'archives_to_mms_collections.json'
 
 
 //load from the config unless overridden
@@ -49,9 +51,9 @@ exports.process = function(options,cb){
 	if (options){
 		if (typeof options != 'function'){
 			//if we want to point the read directory somewhere else we need to pass it here since the 
-			//mssProcess is not exposed in the module that call this process
+			//mmsProcess is not exposed in the module that call this process
 			if (options.pathMms){
-				mssProcess.setPathOverride(options.pathMms)
+				mmsProcess.setPathOverride(options.pathMms)
 			}
 			if (options.pathArchives){
 				pathToArchivesCollectionExtract = options.pathArchives
@@ -62,7 +64,7 @@ exports.process = function(options,cb){
 		}		
 	}
 
-	var totalRecordsDone = 0, totalMatches = 0
+	var totalRecordsDone = 0, totalMatches = 0, matchReport = {}, allMatches = []
 
 	//load the mms division that need to be processed through the archives comparison
 	exports.loadDivisionsAbbreviations()
@@ -70,7 +72,6 @@ exports.process = function(options,cb){
 	//load the archives collection dataset
 	archivesLoad.loadData(pathToArchivesCollectionExtract, function(archivesCollections){
 
-	var alltest = []
 
 	async.series({
 
@@ -86,35 +87,77 @@ exports.process = function(options,cb){
 					//the file name
 					abbreviation : exports.loadDivisionsAbbreviations()[x],
 
-
 					//this is where the comparison happens
 					action: function(data){
 
-
-
-						if (alltest.indexOf(data.d_id) >-1 ) console.log(">>>>>This one is a dupe")
-
-						alltest.push(data.d_id)
-						
+					
 						//get the idents for this mms record
 						var mmsIdents = mmsProcess.extractIds(data)
 						var mmsIdentsNormalized = utils.normalizeIdents(mmsIdents)
+						var matchedArchivesIds = []
+						var matches = []
 
-
+						//loop through each normalized ident
 						for (var normalizedId in mmsIdentsNormalized){
 
+							//see if this normalized id is in the index for the same field
 							if (archivesLoad.matchIdentifierIndex(normalizedId,mmsIdentsNormalized[normalizedId])){
 
 								for (var key in archivesCollections){
-
 									var r = compare.compareIdentifiersExact(mmsIdents,archivesCollections[key])
 									if (r.match){
-										totalMatches++
-										console.log(r)
-										console.log(mmsIdents)
-										console.log(archivesCollections[key])
+
+										if (matchedArchivesIds.indexOf(archivesCollections[key]['mssDb'])==-1){
+											totalMatches++
+
+											matches.push({archives:archivesCollections[key], mms:mmsIdents})
+
+											//mark this one is matched so we don't match over and over with difffrent idents of the same record
+											matchedArchivesIds.push(archivesCollections[key]['mssDb'])
+
+											if (matchReport[r.matchOn.sort().toString().replace(/,/g,"+")]){
+												matchReport[r.matchOn.sort().toString().replace(/,/g,"+")]++
+											}else{
+												matchReport[r.matchOn.sort().toString().replace(/,/g,"+")]=1
+											}
+
+											archivesLoad.markAsMatched(archivesCollections[key]['mssDb'])
+
+
+
+										}
 									}
-									
+
+									//title matches are going to be more loose, so don't mess with the already matached ones
+									if (!archivesCollections[key]['matched']){
+
+										var mmsTitle = mmsIdents['title']
+										var archivesTitle = archivesCollections[key]['title']
+
+										//no one word collections
+										if (archivesTitle.split(" ").length > 1){
+
+		
+											//console.log("Doing",archivesCollections[key]['title'], "=?", mmsIdents['title'])
+											var r = compare.compareTitles( archivesTitle, mmsTitle)
+											if (r){
+												if (r>0.75){
+
+													mmsIdents['titleMatch'] = r
+
+													if (!archivesCollections[key]['matchedTitle']){
+														archivesCollections[key]['matchedTitle'] = [mmsIdents]
+													}else{
+														archivesCollections[key]['matchedTitle'].push(mmsIdents)
+													}													
+												}
+											}
+
+										}
+
+									}
+
+
 
 
 								}
@@ -122,34 +165,21 @@ exports.process = function(options,cb){
 							}
 						}
 
+
+
+
 						totalRecordsDone++
 
-						console.log("------------------",alltest.length,"--",data['d_type'],"--",data['d_id'],"------------------",totalMatches,"------------------")
+						if (matches.length>0) allMatches.push(matches)
 
-						//if there is a match on the index then try the full comparison
-
-
-
-						// for (var key in archivesCollections){
-
-						// 	var r = compare.compareIdentifiersExact(mmsIdents,archivesCollections[key])
-						// 	if (r.match){
-						// 		totalMatches++
-						// 		console.log(r)
-						// 		console.log(mmsIdents)
-						// 		console.log(archivesCollections[key])
-						// 	}
-							
-
-
-						// }
-
+					
+						process.stdout.write("Total Collections Checked: " + totalRecordsDone  + " | Matches: " + totalMatches + "\r")
 
 
 
 					},
 
-					//no call back in this case since we are it from within an async map
+					//no call back in this case since we are calling it from within an async map
 					cbUnit : false,
 
 					//we only are looking at collections here
@@ -158,49 +188,73 @@ exports.process = function(options,cb){
 				})
 			}
 
-			console.log(options)
-
-
 			//fires the process off for all divisions
 			async.map(options, mmsProcess.streamRecords, function(results){
-
-
-				console.log('done w/ map')
-
-				callbackOne()
-				
+				console.log('\nDone with collection identifier comparsion\n')
+				callbackOne()				
 			});		
-
-
 			
 		},
 		
 		two: function(callbackTwo){
 
-			console.log("done with two call?")
+				
+			//lets compare titles!
+			console.log("Checking for title matches")
+
+			for (var key in archivesCollections){
+
+				if (!archivesCollections[key]['matched']){
+					if (archivesCollections[key]['matchedTitle']){
+						if (archivesCollections[key]['matchedTitle'].length > 0){
+							console.log(archivesCollections[key])
+						}
+					}
+				}
+			}
+
+
+
+
+
 
 			callbackTwo()
 	
+		},
+
+		three: function(callbackThree){
+
+
+
+			//output results
+
+
+
+
+
+			callbackThree()
+
 		}
 	},
-	function(err, results) {
+		function(err, results) {
 	
-		if (cb) cb()
+			//can expand what is in the callback for various uses
+			var returnVal = {
+				totalMatches: totalMatches,
+				matchReport: matchReport,
+				matches: allMatches
+			}		
 
+
+			//write out all the matches
+			var ws = fs.createWriteStream(pathToArchivesOutput)
+			ws.end(JSON.stringify(allMatches));
+
+
+			if (cb) cb(returnVal)
+
+		})
 	})
-
-
-		
-
-		
-
-		
-	})
-
-	
-
-
-
 
 
 }
@@ -216,4 +270,7 @@ exports.loadDivisionsReset = function(){
 exports.setExtractsPath = function(path){
 	pathToMmsExtracts = path
 }
-
+//set it for testing
+exports.setArchivesOutputPath = function(path){
+	pathToArchivesOutput = path
+}

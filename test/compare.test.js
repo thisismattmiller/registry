@@ -11,21 +11,32 @@ describe('compare', function () {
 	var archivesCollectionTestRecord = {"active":true,"bnumber":"b10483503","boost_queries":null,"call_number":"MssArc RG8 5844","component_layout_id":null,"created_at":"2013-04-01T14:58:47Z","data":{"unitdate":[{"value":"1908-2000","type":"inclusive"}],"date_inclusive_start":1908,"date_inclusive_end":2000,"keydate":"1908","dates_index":[1908,1909,1910,1911,1912,1913,1914,1915,1916,1917,1918,1919,1920,1921,1922,1923,1924,1925,1926,1927,1928,1929,1930,1931,1932,1933,1934,1935,1936,1937,1938,1939,1940,1941,1942,1943,1944,1945,1946,1947,1948,1949,1950,1951,1952,1953,1954,1955,1956,1957,1958,1959,1960,1961,1962,1963,1964,1965,1966,1967,1968,1969,1970,1971,1972,1973,1974,1975,1976,1977,1978,1979,1980,1981,1982,1983,1984,1985,1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000],"unittitle":[{"value":"115th Street Branch records"}],"physdesc":[{"format":"structured","physdesc_components":[{"name":"extent","value":".33 linear foot","unit":"linear feet"},{"name":"extent","value":"1 box","unit":"containers"}],"supress_display":true}],"repository":[{"value":"<span class=\"corpname\">The New York Public Library. <span class=\"subarea\">Manuscripts and Archives Division</span></span> <div class=\"address\"> <span class=\"addressline\">New York, New York</span></div>"}],"langmaterial":[{"value":"English"}],"prefercite":[{"value":"<p>115th Street Branch Records, Manuscripts and Archives Division, The New York Public Library.</p>"}],"origination":[{"value":"New York Public Library. 115th Street Branch","type":"corpname"}],"bioghist":[{"value":"<p>The 115th Street Branch of The New York Public Library was opened in 1908. The library building was designed by the architectural firm of McKim, Mead &amp; White and was constructed with funds provided by Andrew Carnegie.</p>","supress_display":true}],"scopecontent":[{"value":"<p>Publicity materials and administrative files documenting the operations of the 115th Street Branch of The New York Public Library.</p>","supress_display":true}],"acqinfo":[{"value":"<p>Transferred from 115th Street Branch Library.</p>"}],"unitid":[{"value":"MssArc RG8 5844","type":"local_call"},{"value":"5844","type":"local_mss"}],"processinfo":[{"value":"<p>Compiled Jim Moske; machine readable finding aid created by FAKER.</p>"}],"abstract":[{"value":"The 115th Street Branch of The New York Public Library was opened in 1908. The library building was designed by the architectural firm of McKim, Mead &amp; White and was constructed with funds provided by Andrew Carnegie. Publicity materials and administrative files documenting the operations of the 115th Street Branch of The New York Public Library.","generated":true}],"extent_statement":".33 linear feet (1 box)"},"date_processed":2005,"date_statement":"1908-2000","extent_statement":".33 linear feet (1 box)","featured_seq":null,"fully_digitized":0,"has_digital":0,"id":3,"identifier_type":"local_mss","identifier_value":"5844","keydate":1908,"linear_feet":0.33,"max_depth":2,"org_unit_id":14,"origination":"New York Public Library. 115th Street Branch","pdf_finding_aid":{"url":null},"series_count":1,"title":"115th Street Branch records","updated_at":"2014-12-04T21:22:08Z"}
 	var archivesCollectionTestRecord2 = {"active":true,"bnumber":"b12345","boost_queries":null,"call_number":"MssArc RG8 5844","component_layout_id":null,"created_at":"2013-04-01T14:58:47Z","data":{"unitdate":[{"value":"1908-2000","type":"inclusive"}],"date_inclusive_start":1908,"date_inclusive_end":2000,"keydate":"1908","dates_index":[1908,1909,1910,1911,1912,1913,1914,1915,1916,1917,1918,1919,1920,1921,1922,1923,1924,1925,1926,1927,1928,1929,1930,1931,1932,1933,1934,1935,1936,1937,1938,1939,1940,1941,1942,1943,1944,1945,1946,1947,1948,1949,1950,1951,1952,1953,1954,1955,1956,1957,1958,1959,1960,1961,1962,1963,1964,1965,1966,1967,1968,1969,1970,1971,1972,1973,1974,1975,1976,1977,1978,1979,1980,1981,1982,1983,1984,1985,1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000],"unittitle":[{"value":"115th Street Branch records"}],"physdesc":[{"format":"structured","physdesc_components":[{"name":"extent","value":".33 linear foot","unit":"linear feet"},{"name":"extent","value":"1 box","unit":"containers"}],"supress_display":true}],"repository":[{"value":"<span class=\"corpname\">The New York Public Library. <span class=\"subarea\">Manuscripts and Archives Division</span></span> <div class=\"address\"> <span class=\"addressline\">New York, New York</span></div>"}],"langmaterial":[{"value":"English"}],"prefercite":[{"value":"<p>115th Street Branch Records, Manuscripts and Archives Division, The New York Public Library.</p>"}],"origination":[{"value":"New York Public Library. 115th Street Branch","type":"corpname"}],"bioghist":[{"value":"<p>The 115th Street Branch of The New York Public Library was opened in 1908. The library building was designed by the architectural firm of McKim, Mead &amp; White and was constructed with funds provided by Andrew Carnegie.</p>","supress_display":true}],"scopecontent":[{"value":"<p>Publicity materials and administrative files documenting the operations of the 115th Street Branch of The New York Public Library.</p>","supress_display":true}],"acqinfo":[{"value":"<p>Transferred from 115th Street Branch Library.</p>"}],"unitid":[{"value":"MssArc RG8 5844","type":"local_call"},{"value":"5844","type":"local_mss"}],"processinfo":[{"value":"<p>Compiled Jim Moske; machine readable finding aid created by FAKER.</p>"}],"abstract":[{"value":"The 115th Street Branch of The New York Public Library was opened in 1908. The library building was designed by the architectural firm of McKim, Mead &amp; White and was constructed with funds provided by Andrew Carnegie. Publicity materials and administrative files documenting the operations of the 115th Street Branch of The New York Public Library.","generated":true}],"extent_statement":".33 linear feet (1 box)"},"date_processed":2005,"date_statement":"1908-2000","extent_statement":".33 linear feet (1 box)","featured_seq":null,"fully_digitized":0,"has_digital":0,"id":3,"identifier_type":"local_mss","identifier_value":"5844","keydate":1908,"linear_feet":0.33,"max_depth":2,"org_unit_id":14,"origination":"New York Public Library. 115th Street Branch","pdf_finding_aid":{"url":null},"series_count":1,"title":"115th Street Branch records","updated_at":"2014-12-04T21:22:08Z"}
 
+	var mmsIdents = mmsProcess.extractIds(mmsCollectionTestRecord)	
+	var archivesIdents = archivesLoad.extractIds(archivesCollectionTestRecord)
+	var archivesIdents2 = archivesLoad.extractIds(archivesCollectionTestRecord2)
 
-	it('should take two record ident objects and compare all keys looking for EXATCT matches', function () {
 
-		var mmsIdents = mmsProcess.extractIds(mmsCollectionTestRecord)	
-		var archivesIdents = archivesLoad.extractIds(archivesCollectionTestRecord)
-		var archivesIdents2 = archivesLoad.extractIds(archivesCollectionTestRecord2)
+	it('should take two record ident objects and compare all keys looking for matches: Match ', function () {
+
+
 
 		var r = compare.compareIdentifiersExact(mmsIdents,archivesIdents)
 
 		r['match'].should.equal(true)
 		r['matchOn'].indexOf('bNumber').should.equal(0)
 
+
+	})
+
+	it('should take two record ident objects and compare all keys looking for matches: No Match', function () {
+
 		r = compare.compareIdentifiersExact(mmsIdents,archivesIdents2)
 		r['match'].should.equal(false)
 
+
+	})
+
+	it('should take two record ident objects and compare all keys looking for matches: Call w/ diff bNumber  ', function () {
 
 		//with only match on callnumber but diffrent b numbers
 		var a = {"callNumber" : "ABCD", "bNumber" : "b1234567"}
@@ -34,6 +45,10 @@ describe('compare', function () {
 		r = compare.compareIdentifiersExact(a,b)
 		r['match'].should.equal(false)
 
+	})
+
+	it('should take two record ident objects and compare all keys looking for matches: Call w/ same bNumber ', function () {
+
 		//with only match on callnumber but same b numbers
 		var a = {"callNumber" : "ABCD", "bNumber" : "b1234567"}
 		var b = {"callNumber" : "ABCD", "bNumber" : "b1234567"}
@@ -41,17 +56,115 @@ describe('compare', function () {
 		r = compare.compareIdentifiersExact(a,b)
 		r['match'].should.equal(true)
 
-		//with only match on callnumber no bnumber
+
+	})
+
+	it('should take two record ident objects and compare all keys looking for matches: Call no title ', function () {
+
+		//with only match on callnumber no bnumber ot title
 		var a = {"callNumber" : "ABCD"}
 		var b = {"callNumber" : "ABCD"}
 
 		r = compare.compareIdentifiersExact(a,b)
+		r['match'].should.equal(false)
+
+	})
+
+	it('should take two record ident objects and compare all keys looking for matches: Call w/ title', function () {
+
+
+		//with only matching call numbers and similar looking titles
+
+		var a = { title: 'Richard Tucker photographs', callNumber: '*T-VIM 1995-005' }
+		var b = { callNumber: '*T-Vim 1995-005', title: 'Richard Tucker photographs'}
+
+		r = compare.compareIdentifiersExact(a,b)
 		r['match'].should.equal(true)
-		r['confidence'].should.equal(0.25)
+		r['confidence'].should.equal(1)
 
 
 
 	})
+	it('should take two record ident objects and compare all keys looking for matches: Call with slightly diff title ', function () {
+
+
+		var a = { title: 'Richard Tucker photographs, 1934-1951', callNumber: '*T-VIM 1995-005' }
+		var b = { callNumber: '*T-Vim 1995-005', title: 'Richard Tucker photographs'}
+
+		r = compare.compareIdentifiersExact(a,b)
+		r['match'].should.equal(true)
+		r['confidence'].should.equal(1)
+
+	})
+
+	it('should take two record ident objects and compare all keys looking for matches: Call Number only okay if MSS Col ', function () {
+
+
+		var a = { bNumber: "b1234567", callNumber: 'MssCol 3101' }
+		var b = { callNumber: 'MssCol 3101', bNumber: false}
+
+		r = compare.compareIdentifiersExact(a,b)
+		r['match'].should.equal(true)
+		r['confidence'].should.equal(1)
+
+	})
+
+
+	it('should take two record ident objects and compare all keys looking for matches: Call with Untitled title', function () {
+		var a = { title: 'Untitled', callNumber: '*T-VIM 1995-005' }
+		var b = { callNumber: '*T-Vim 1995-005', title: 'Untitled'}
+
+		r = compare.compareIdentifiersExact(a,b)
+		r['match'].should.equal(false)
+
+	})
+
+	it('should take two record ident objects and compare all keys looking for matches: Call Only try 2', function () {
+		var a = { callNumber: '*T-Mss 1996-016',
+				  mss: '21740',
+				  bNumber: 'b16098291',
+				  barcode: false,
+				  keydate: 1815,
+				  date_inclusive_start: 1815,
+				  date_inclusive_end: 1988,
+				  title: 'Emeline Clark Roche Collection',
+				  origination: 'Roche, Emeline Clark, 1902-1995',
+				  mssDb: 1833
+				}
+
+
+		var b = { mmsDb: '40984',
+			      mmsType: 'Collection',
+			      mmsUuid: 'ef56d760-2ae9-0131-5dd5-58d385a7b928',
+			      title: 'Emeline Clark Roche Collection',
+			      bNumber: '16098283',
+			      callNumber: '*T-Mss 1996-016',
+   				}
+
+		r = compare.compareIdentifiersExact(a,b)
+		r['match'].should.equal(true)
+
+	})
+
+
+
+
+	it('should take two strings and return their similarity no fuzzy', function () {
+
+		r = compare.compareTitles('Richard Tucker photographs, 1934-1951', 'Richard Tucker photographs')
+		r.should.be.above(0.8)
+
+	})
+
+	it('should take two strings and return their similarity with fuzzy', function () {
+
+		r = compare.compareTitles('Richard Tucker photographs', 'Richardersd Tuckers [sic] photographs',0.75)
+		r.should.be.above(0.75)
+
+	})
+
+
+
 
 
 })

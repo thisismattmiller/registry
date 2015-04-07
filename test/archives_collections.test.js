@@ -28,10 +28,10 @@ describe('archivesLoad', function () {
 			r.length.should.equal(1)
 			r[0]['callNumber'].should.equal('MssCol 2993')
 
-			var r = archivesLoad.matchIdentifier({'bNumber': 'b19614101'})
+			var r = archivesLoad.matchIdentifier({'bNumber': 'b11985357'})
 			r.should.be.type('object')			
 			r.length.should.equal(1)
-			r[0]['bNumber'].should.equal('b19614101')
+			r[0]['bNumber'].should.equal('b11985357')
 
 			var r = archivesLoad.matchIdentifier({ 'mss' : 4033 })
 			r.should.be.type('object')			

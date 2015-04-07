@@ -13,12 +13,13 @@ var fs = require('fs'),
   config = require("config"),
   exceptionReport = require("../util/exception_report.js")
 
-
 var exports = module.exports = {}
 
 
 var hashFields = {}
 var divisions = {}
+
+var divisionLookup = config.get('MMSDivisions')['divisions']
 
 
 //the main function pass it the path to the export, and where to put the files 
@@ -76,6 +77,8 @@ exports.process = function(pathToMMSExport, outputPath, cb){
 
 
 				//we want to limit what goes into the extracts based on dirty data
+
+				//no uuid or no solr doc hash? It is likely a deleted record
 				if (data['uuid'] &&  Object.keys(data['solr_doc_hash']).length > 0){
 					outBuffer[division].push(data)
 				}else{
@@ -184,26 +187,55 @@ exports.countDivision = function(record){
 	var division = "Undefined"
 
 	if (record['solr_doc_hash']){
-		if (record['solr_doc_hash']['org_unit_name_short']){
-			if (divisions[record['solr_doc_hash']['org_unit_name_short']]){
-				divisions[record['solr_doc_hash']['org_unit_name_short']]['count']++
+		if (record['solr_doc_hash']['org_unit_code']){
+
+			if (record['solr_doc_hash']['org_unit_code'].search(",")>-1){
+				//this has a comma so there are multiple ones in there, loop through them all and pull out the first one that looks good
+				var codeAry = record['solr_doc_hash']['org_unit_code'].split(",")
+				for (var x in codeAry){
+					if (codeAry[x].trim().length>1){
+						code = codeAry[x]
+						break
+					}
+				}
+				//if something went wrong like: ", "
+				if (!code) code = "undefined"
 			}else{
-				divisions[record['solr_doc_hash']['org_unit_name_short']] = { "count" : 1, "code" : record['solr_doc_hash']['org_unit_code'], "items" : 0, "containers" : 0, "collections" : 0, "undefined" : 0 }
+				//strip out pucnt, etc
+				var code = record['solr_doc_hash']['org_unit_code']
+			}
+
+			code = code.trim()
+
+			var lookupCode = code.toLowerCase().replace(/[\.,-\/#!$%\^&\*;:{}=\-_`~()\[\]]/g,"")
+
+			//do we have this code
+			if (divisionLookup[lookupCode]){
+				var shortName = divisionLookup[lookupCode]['name']
+			}else{
+				var shortName = "Divison with code: "+code
+			}
+
+
+			if (divisions[shortName]){
+				divisions[shortName]['count']++
+			}else{
+				divisions[shortName] = { "count" : 1, "code" : code, "items" : 0, "containers" : 0, "collections" : 0, "undefined" : 0 }
 			} 
 
 			if (record['d_type']){
 				if (record['d_type'] == "Item"){
-					divisions[record['solr_doc_hash']['org_unit_name_short']]['items']++
+					divisions[shortName]['items']++
 				}else if (record['d_type'] == "Container"){
-					divisions[record['solr_doc_hash']['org_unit_name_short']]['containers']++
+					divisions[shortName]['containers']++
 				}else if (record['d_type'] == "Collection"){
-					divisions[record['solr_doc_hash']['org_unit_name_short']]['collections']++
+					divisions[shortName]['collections']++
 				}
 			}else{
-				divisions[record['solr_doc_hash']['org_unit_name_short']]['undefined']++
+				divisions[shortName]['undefined']++
 			}
 
-			division = record['solr_doc_hash']['org_unit_code']
+			division = code
 
 		}else{
 
@@ -219,6 +251,7 @@ exports.countDivision = function(record){
 
 	return division
 }
+
 
 
 //exposes the private variable if asked.

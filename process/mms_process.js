@@ -12,6 +12,7 @@ var fs = require('fs'),
   es = require('event-stream'),
   config = require("config"),
   exceptionReport = require("../util/exception_report.js"),
+  utils = require("../util/utils.js"),
   libxmljs = require("libxmljs")
   
 
@@ -130,23 +131,21 @@ exports.extractIds = function(record){
 		idents['mmsUuid'] = record['uuid']
 	}
 
+	//the solr doc hash title is sometimes messed up with encoding errors
+	// so pull it out below from the xml
+	// if (record['solr_doc_hash']['title']){
+	// 	if (record['solr_doc_hash']['title'].length>0){
+	// 		idents['title'] = ""
+	// 		for (var x in record['solr_doc_hash']['title']){
+	// 			idents['title']+= record['solr_doc_hash']['title'][x] + ' '
 
-	if (record['solr_doc_hash']['title']){
+	// 		}
+	// 		idents['title']=idents['title'].trim()
+	// 		idents['titleLast'] = record['solr_doc_hash']['title'][record['solr_doc_hash']['title'].length-1].trim()
+	// 	}
 
-		if (record['solr_doc_hash']['title'].length>0){
-			
-			idents['titleAll'] = ""
+	// }
 
-			for (var x in record['solr_doc_hash']['title']){
-				idents['titleAll']+= record['solr_doc_hash']['title'][x] + ' '
-
-			}
-			idents['titleAll']=idents['titleAll'].trim()
-
-			idents['titleLast'] = record['solr_doc_hash']['title'][record['solr_doc_hash']['title'].length-1].trim()
-		}
-
-	}
 
 	if (record['xml']){
 
@@ -159,6 +158,9 @@ exports.extractIds = function(record){
 			exceptionReport.log("mms process","invalid MODS record",{error: err, data: record})
 			return idents
 		}
+
+
+
 
 
 		var children = xmlDoc.root().childNodes();
@@ -205,8 +207,21 @@ exports.extractIds = function(record){
 				}
 			}
 
+
+			if (n.name() == 'titleInfo'){
+				idents['title'] = n.text()
+
+
+			}
+
 		}
 
+	}
+
+
+	//normalize the bnumber
+	if (idents['bNumber']){
+		idents['bNumber'] = utils.normalizeBnumber(idents['bNumber'])
 	}
 
 

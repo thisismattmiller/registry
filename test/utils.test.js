@@ -30,6 +30,40 @@ describe('utils', function () {
 
 	})
 
+	it('should a bnumber and make sure it is a bnumber formated to specific style: no b', function () {
+
+		r = utils.normalizeBnumber("12345678")
+		r.should.equal('b12345678')
+
+	})
+
+	it('should a bnumber and make sure it is a bnumber formated to specific style: check suffix', function () {
+
+		r = utils.normalizeBnumber("b12345678~S1")
+		r.should.equal("b12345678")
+
+	})
+
+	it('should a bnumber and make sure it is a bnumber formated to specific style: normal', function () {
+
+		r = utils.normalizeBnumber("b123456")
+		r.should.equal("b123456")
+
+	})
+
+	it('should a bnumber and make sure it is a bnumber formated to specific style: not a b number', function () {
+
+		r = utils.normalizeBnumber("NYP-123543-A1")
+		r.should.equal(false)
+
+	})
+
+	it('should a bnumber and make sure it is a bnumber formated to specific style: extra digit', function () {
+
+		r = utils.normalizeBnumber("b1234567890")
+		r.should.equal("b12345678")
+
+	})
 
 
 })

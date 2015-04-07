@@ -14,6 +14,8 @@ describe('mssProcess', function () {
 		r['mmsDb'].should.equal("26994")
 		r['oclc'].should.equal('NYPG784271303-B')
 		r['callNumber'].should.equal('Berg Coll. 77-645')
+
+		r['title'].should.equal('The Newtonian system of philosophy, adapted to the capacities of young gentlemen and ladies ... being the substance of six lectures read to the Lilliputian Society, by Tom Telescope, A. M., and collected and methodized for the benefit of the youth of these Kingdoms, by their old friend Mr. Newbery ...')
 		
 	})
 

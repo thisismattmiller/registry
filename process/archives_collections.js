@@ -139,6 +139,9 @@ exports.extractIds = function(data){
 			archivesCollections[data['id']][ idThesaurus['portal_id'] ] = false
 		}
 
+		//normalize the bnumber
+		archivesCollections[data['id']]['bNumber'] = utils.normalizeBnumber(archivesCollections[data['id']]['bNumber'])
+
 
 
 	}

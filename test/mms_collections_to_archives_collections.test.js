@@ -1,4 +1,5 @@
 var should = require('should')
+var fs = require('fs')
 var utils = require("../util/utils.js");
 var mmsCollectionsToArchivesCollections = require("../jobs/mms_collections_to_archives_collections.js")
 
@@ -22,13 +23,26 @@ describe('mmsCollectionsToArchivesCollections', function () {
 	})
 
 
-	it('should pass a mms record through the archives collection check and return a match for each', function (done) {
+	it('should pass a mms collection record through the archives collection check and return a match for each', function (done) {
 
+		//overwrite the default settings for testing
 		mmsCollectionsToArchivesCollections.loadDivisionsReset()
+		mmsCollectionsToArchivesCollections.setArchivesOutputPath('./test/data/tmp/archives_to_mms_collections.json')
 
+		//override with our test extract
 		var r = mmsCollectionsToArchivesCollections.loadDivisionsAbbreviations(['mms_test'])
 
-		mmsCollectionsToArchivesCollections.process({pathMms : './test/data/', pathArchives : './test/data/archives_collections.json'}, function(){ done() } )
+		mmsCollectionsToArchivesCollections.process(
+			{pathMms : './test/data/', pathArchives : './test/data/archives_collections.json'}, 
+			function(returnVal){ 
+
+				returnVal.totalMatches.should.equal(1)
+				
+				//make sure it made the file
+				var r = fs.unlinkSync('./test/data/tmp/archives_to_mms_collections.json');
+
+				done() 
+		})
 
 
 
