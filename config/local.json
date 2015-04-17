@@ -7,7 +7,9 @@
     },
     "extracts" : {
       "base"                : "/Users/matt/Desktop/data/extracts/",
-      "archivesCollections" : "archives_collections.json"
+      "archivesCollections" : "archives_collections.json",
+      "archivesComponents" : "archives_components.json",
+      "archivesComponentsSplit" : "archives_components_split/"
     }
   },
 
@@ -30,6 +32,7 @@
       "local_tms_id"                       : "tmsId",
       "local_barcode"                      : "barcode",
       "local_bnumber"                      : "bNumber",
+      "local_b"                            : "bNumber",
       "local_catnyp"                       : "catnyp",
       "local_mss"                          : "mss",
       "local_photo_order"                  : "publicOrder",

@@ -7,9 +7,9 @@ var mmsProcess = require("../process/mms_process.js"),
   	fs = require("fs"),
   	async = require("async"),
   	compare = require("../util/compare.js"),
-  	utils = require("../util/utils.js")
-
-
+  	utils = require("../util/utils.js"),
+	readable = require('stream').Readable,
+	jsonStream = require('JSONStream')
 
 
 var exports = module.exports = {}
@@ -18,8 +18,7 @@ var useDivision = []
 
 var pathToMmsExtracts = config.get('Storage')['outputPaths']['mms']
 
-var pathToArchivesOutput = config.get('Storage')['outputPaths']['archives'] + 'archives_to_mms_collections.json'
-
+var pathToArchivesOutput = config.get('Storage')['outputPaths']['archives']
 
 //load from the config unless overridden
 exports.loadDivisionsAbbreviations = function(custom){
@@ -64,13 +63,14 @@ exports.process = function(options,cb){
 		}		
 	}
 
-	var totalRecordsDone = 0, totalMatches = 0, matchReport = {}, allMatches = []
+	var totalRecordsDone = 0, totalMatches = 0, matchReport = {}, allMatches = [], titleMatches = []
 
 	//load the mms division that need to be processed through the archives comparison
 	exports.loadDivisionsAbbreviations()
 
 	//load the archives collection dataset
 	archivesLoad.loadData(pathToArchivesCollectionExtract, function(archivesCollections){
+
 
 
 	async.series({
@@ -89,7 +89,6 @@ exports.process = function(options,cb){
 
 					//this is where the comparison happens
 					action: function(data){
-
 					
 						//get the idents for this mms record
 						var mmsIdents = mmsProcess.extractIds(data)
@@ -104,6 +103,7 @@ exports.process = function(options,cb){
 							if (archivesLoad.matchIdentifierIndex(normalizedId,mmsIdentsNormalized[normalizedId])){
 
 								for (var key in archivesCollections){
+
 									var r = compare.compareIdentifiersExact(mmsIdents,archivesCollections[key])
 									if (r.match){
 
@@ -115,66 +115,81 @@ exports.process = function(options,cb){
 											//mark this one is matched so we don't match over and over with difffrent idents of the same record
 											matchedArchivesIds.push(archivesCollections[key]['mssDb'])
 
+
 											if (matchReport[r.matchOn.sort().toString().replace(/,/g,"+")]){
 												matchReport[r.matchOn.sort().toString().replace(/,/g,"+")]++
 											}else{
 												matchReport[r.matchOn.sort().toString().replace(/,/g,"+")]=1
 											}
 
-											archivesLoad.markAsMatched(archivesCollections[key]['mssDb'])
+											archivesLoad.markAsMmsMatched(archivesCollections[key]['mssDb'])
 
-
+											archivesCollections[key]['matchMms'] = mmsIdents
 
 										}
 									}
-
-									//title matches are going to be more loose, so don't mess with the already matached ones
-									if (!archivesCollections[key]['matched']){
-
-										var mmsTitle = mmsIdents['title']
-										var archivesTitle = archivesCollections[key]['title']
-
-										//no one word collections
-										if (archivesTitle.split(" ").length > 1){
-
-		
-											//console.log("Doing",archivesCollections[key]['title'], "=?", mmsIdents['title'])
-											var r = compare.compareTitles( archivesTitle, mmsTitle)
-											if (r){
-												if (r>0.75){
-
-													mmsIdents['titleMatch'] = r
-
-													if (!archivesCollections[key]['matchedTitle']){
-														archivesCollections[key]['matchedTitle'] = [mmsIdents]
-													}else{
-														archivesCollections[key]['matchedTitle'].push(mmsIdents)
-													}													
-												}
-											}
-
-										}
-
-									}
-
-
-
 
 								}
 
 							}
+
 						}
 
 
+
+
+						//no luck? Try looking for some title matches
+						if (matches.length==0){
+							
+							for (var key in archivesCollections){
+								//title matches are going to be more loose, so don't mess with the already matached ones						
+								if (!archivesCollections[key]['matchedMms']){
+
+
+
+									var mmsTitle = mmsIdents['title']
+									var archivesTitle = archivesCollections[key]['title']
+									
+									//console.log(archivesTitle, "|", mmsTitle, compare.compareTitles( archivesTitle, mmsTitle))
+
+									//no one word collections
+									if (archivesTitle.split(" ").length > 1){
+
+
+										//console.log("Doing",archivesCollections[key]['title'], "=?", mmsIdents['title'])
+										var r = compare.compareTitles( archivesTitle, mmsTitle)
+										
+										if (r){
+
+											if (r>=0.75){
+
+												mmsIdents['titleMatch'] = r
+
+												if (!archivesCollections[key]['matchedMmsTitle']){
+													archivesCollections[key]['matchedMmsTitle'] = [mmsIdents]
+												}else{
+													archivesCollections[key]['matchedMmsTitle'].push(mmsIdents)
+												}
+
+											}
+										}
+
+									}
+
+								}
+
+							}						
+
+						}
 
 
 						totalRecordsDone++
 
 						if (matches.length>0) allMatches.push(matches)
 
+
 					
 						process.stdout.write("Total Collections Checked: " + totalRecordsDone  + " | Matches: " + totalMatches + "\r")
-
 
 
 					},
@@ -204,18 +219,52 @@ exports.process = function(options,cb){
 
 			for (var key in archivesCollections){
 
-				if (!archivesCollections[key]['matched']){
-					if (archivesCollections[key]['matchedTitle']){
-						if (archivesCollections[key]['matchedTitle'].length > 0){
-							console.log(archivesCollections[key])
+				if (!archivesCollections[key]['matchedMms']){
+					if (archivesCollections[key]['matchedMmsTitle']){
+						if (archivesCollections[key]['matchedMmsTitle'].length > 0){
+
+							//it has matched titles
+							var newMatchedTitles = []
+							//we need to compare the title matches and only possibly match via title on things
+							//that either do not have an identifier
+							for (var x in archivesCollections[key]['matchedMmsTitle']){
+
+								//if they both have bnumbers (and they are diffrent otherwise they would have matched on them)
+								//then remove this one because it cannot be the right collection, it is likely a sub-group
+								if ((archivesCollections[key]['bNumber'] && archivesCollections[key]['matchedMmsTitle'][x]['bNumber']) ||  (archivesCollections[key]['callNumber'] && archivesCollections[key]['matchedMmsTitle'][x]['callNumber']) ){
+
+									//console.log("Remove", archivesCollections[key]['matchedMmsTitle'][x])
+								}else{
+									newMatchedTitles.push(archivesCollections[key]['matchedMmsTitle'][x])
+								}
+
+							}
+
+							archivesCollections[key]['matchedMmsTitle'] = newMatchedTitles
+
+
+						}
+
+						//sotore them if they really check out
+						if (archivesCollections[key]['matchedMmsTitle'].length > 0){
+							for (var x in archivesCollections[key]['matchedMmsTitle']){
+								var tmp = JSON.parse(JSON.stringify(archivesCollections[key]))
+								delete tmp['matchedMmsTitle']
+
+								archivesLoad.markAsMmsMatched(archivesCollections[key]['mssDb'])
+
+								titleMatches.push(
+									{
+										"mms" 	   : archivesCollections[key]['matchedMmsTitle'][x],
+										"archives" : tmp
+									}
+								)
+
+							}
 						}
 					}
 				}
 			}
-
-
-
-
 
 
 			callbackTwo()
@@ -242,16 +291,41 @@ exports.process = function(options,cb){
 			var returnVal = {
 				totalMatches: totalMatches,
 				matchReport: matchReport,
-				matches: allMatches
+				matches: allMatches,
+				titleMatches: titleMatches
 			}		
 
 
 			//write out all the matches
-			var ws = fs.createWriteStream(pathToArchivesOutput)
-			ws.end(JSON.stringify(allMatches));
+			var ws = fs.createWriteStream(pathToArchivesOutput + 'archives_to_mms_collections.json')
+			ws.end(JSON.stringify(returnVal));
+
+			//write out the archives extract now updated with matched or not
+			var rs = new readable({objectMode: true})
+			var outfile = fs.createWriteStream(pathToArchivesOutput + 'archives_collections.json');
+			var stringify = jsonStream.stringify("[\n",",\n","\n]\n");
+			rs._read = function () {};
+			rs.pipe(stringify).pipe(outfile);
+
+			for (var key in archivesCollections){
+
+				rs.push(archivesCollections[key])
+
+			} 
+
+			rs.push(null)
+
+			outfile.on('finish', function () {
+
+				console.log('file has been written');
 
 
-			if (cb) cb(returnVal)
+				if (cb) cb(returnVal)
+
+			});
+
+
+			
 
 		})
 	})

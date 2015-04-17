@@ -27,7 +27,7 @@ describe('mmsCollectionsToArchivesCollections', function () {
 
 		//overwrite the default settings for testing
 		mmsCollectionsToArchivesCollections.loadDivisionsReset()
-		mmsCollectionsToArchivesCollections.setArchivesOutputPath('./test/data/tmp/archives_to_mms_collections.json')
+		mmsCollectionsToArchivesCollections.setArchivesOutputPath('./test/data/tmp/')
 
 		//override with our test extract
 		var r = mmsCollectionsToArchivesCollections.loadDivisionsAbbreviations(['mms_test'])
@@ -37,9 +37,14 @@ describe('mmsCollectionsToArchivesCollections', function () {
 			function(returnVal){ 
 
 				returnVal.totalMatches.should.equal(1)
-				
+
+				returnVal.titleMatches.length.should.equal(1)
+
 				//make sure it made the file
 				var r = fs.unlinkSync('./test/data/tmp/archives_to_mms_collections.json');
+				var r = fs.unlinkSync('./test/data/tmp/archives_collections.json');
+
+				
 
 				done() 
 		})

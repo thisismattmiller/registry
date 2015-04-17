@@ -64,7 +64,7 @@ exports.extractIds = function(data){
 
 	if (data['id'] && data['active']){
 
-		archivesCollections[data['id']] = {'callNumber': false, 'mss': false, 'bNumber': false, 'barcode': false, 'matched':false}
+		archivesCollections[data['id']] = {'callNumber': false, 'mss': false, 'bNumber': false, 'barcode': false, 'matchedMms':false}
 
 		if (data['data']){
 
@@ -76,6 +76,9 @@ exports.extractIds = function(data){
 					if (d['unitid'][x]['type'] && d['unitid'][x]['value']){
 
 						if (d['unitid'][x]['value'] != "")
+
+							//console.log("####",idThesaurus[d['unitid'][x]['type']],"####",d['unitid'][x]['value'], "####", data['title'] )
+
 							archivesCollections[data['id']][ idThesaurus[d['unitid'][x]['type']] ] = d['unitid'][x]['value']
 
 							archivesCollectionsIdentfierIndex[idThesaurus[d['unitid'][x]['type']]][utils.normalize(d['unitid'][x]['value'])] = 1
@@ -107,8 +110,6 @@ exports.extractIds = function(data){
 		if (data['bnumber']){
 			archivesCollections[data['id']][ idThesaurus['bnumber'] ] = data['bnumber']
 				archivesCollectionsIdentfierIndex['bNumber'][utils.normalize(data['bnumber'])] = 1
-		}else{
-			archivesCollections[data['id']][ idThesaurus['bnumber'] ] = false
 		}
 
 		if (data['title']){
@@ -120,11 +121,7 @@ exports.extractIds = function(data){
 		//only set it if it is not yet set
 		if (data['call_number']){
 			if (!archivesCollections[data['id']][ idThesaurus['call_number'] ]) archivesCollections[data['id']][ idThesaurus['call_number'] ]  = data['call_number']
-
 			archivesCollectionsIdentfierIndex[idThesaurus['call_number']][utils.normalize(data['call_number'])] = 1
-
-		}else{
-			archivesCollections[data['id']][ idThesaurus['call_number'] ] = false
 		}
 
 		if (data['origination']){
@@ -145,6 +142,8 @@ exports.extractIds = function(data){
 
 
 	}
+
+
 
 	return archivesCollections[data['id']]
 
@@ -194,11 +193,11 @@ exports.matchIdentifierIndex = function(lookIn,lookFor){
 }
 
 
-exports.markAsMatched = function(portal_id){
+exports.markAsMmsMatched = function(portal_id){
 
 
 	if (archivesCollections[portal_id]){
-		archivesCollections[portal_id]['matched'] = true
+		archivesCollections[portal_id]['matchedMms'] = true
 	}else{
 		return false
 	}

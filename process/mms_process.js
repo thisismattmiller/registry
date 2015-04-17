@@ -70,7 +70,6 @@ exports.streamRecords = function(options, asyncCallback){
 	//this is the function that will be called for each data line in the file
 	var processData = es.mapSync(function (data) {
 
-
 		if (collectionFilter){
 			if (data['d_type']){
 				if (data['d_type'] == 'Collection'){
@@ -83,7 +82,6 @@ exports.streamRecords = function(options, asyncCallback){
 		}else{
 			action(data)
 		}
-		//send the data though the function passed to us
 		
 
 

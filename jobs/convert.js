@@ -4,11 +4,16 @@ var mmsReport = require("../process/mms_report.js");
 var mssProcess = require("../process/mms_process.js")
 var archivesLoad = require("../process/archives_collections.js")
 var exceptionReport = require("../util/exception_report.js")
+var archivesComponentsSplit = require("../process/split_archives_components.js")
 
 
 
 
-mmsReport.process("/Users/matt/Downloads/last_import.json")
+archivesComponentsSplit.splitComponents()
+
+//mmsReport.process("/Users/matt/Downloads/last_import.json")
+
+
 
 //mssProcess.
 

@@ -15,7 +15,7 @@
         "string": "3.0.0 ",
         "find-remove" : "0.2.5",
         "glob": "5.0.3",
-        "libxmljs" : "0.13.0",
+        "libxmljs" : "0.14.0",
         "async" : "0.9.0",
         "string_score" : "0.1.22"
     },
