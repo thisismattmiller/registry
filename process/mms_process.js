@@ -73,7 +73,6 @@ exports.streamRecords = function(options, asyncCallback){
 		if (collectionFilter){
 			if (data['d_type']){
 				if (data['d_type'] == 'Collection'){
-
 					action(data)
 				}
 			}else{
@@ -82,9 +81,6 @@ exports.streamRecords = function(options, asyncCallback){
 		}else{
 			action(data)
 		}
-		
-
-
 	})
 
 

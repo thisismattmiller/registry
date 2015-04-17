@@ -4,8 +4,9 @@ var config = require("config"),
   	fs = require("fs"),
 	readable = require('stream').Readable,
 	jsonStream = require('JSONStream'),
-	es = require('event-stream')
-
+	es = require('event-stream'),
+	findRemoveSync = require('find-remove'),
+	glob = require("glob")
 
 var exports = module.exports = {}
 
@@ -15,7 +16,8 @@ var pathToComponentsSplitDir = config.get('Storage')['extracts']['base'] + confi
 
 exports.splitComponents = function(cb){
 
-
+	//delete the current data
+	var result = findRemoveSync(pathToComponentsSplitDir, {extensions: ['.json']})
 
 	var stream = fs.createReadStream(pathToComponentsExtract, {encoding: 'utf8'}),
 		parser = jsonStream.parse('*')

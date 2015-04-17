@@ -317,8 +317,6 @@ exports.process = function(options,cb){
 
 			outfile.on('finish', function () {
 
-				console.log('file has been written');
-
 
 				if (cb) cb(returnVal)
 

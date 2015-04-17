@@ -39,7 +39,7 @@ describe('exception_report', function () {
 
 		}catch (err) {
 			//not found
-			if (err.errno != 34){
+			if (err.errno != 34 && err.errno != -2){
 				throw "Unexpected error"
 			}else{
 				ableToDelete = false
@@ -72,7 +72,7 @@ describe('exception_report', function () {
 
 		}catch (err) {
 			//not found
-			if (err.errno != 34){
+			if (err.errno != 34 && err.errno != -2){
 				throw "Unexpected error"
 			}else{
 				ableToDelete = false

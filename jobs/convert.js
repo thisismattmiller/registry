@@ -5,11 +5,12 @@ var mssProcess = require("../process/mms_process.js")
 var archivesLoad = require("../process/archives_collections.js")
 var exceptionReport = require("../util/exception_report.js")
 var archivesComponentsSplit = require("../process/split_archives_components.js")
+var mmsChildrenSplit = require("../process/split_mms_children.js")
 
 
 
 
-archivesComponentsSplit.splitComponents()
+mmsChildrenSplit.splitChildren("/Users/matt/Downloads/last_import.json")
 
 //mmsReport.process("/Users/matt/Downloads/last_import.json")
 

@@ -35,7 +35,6 @@ exports.deleteAll = function(){
 
 exports.deleteOperation = function(operation){
 
-
 	operation = operation.replace(/\s/g,'_')
 	operation = utils.normalize(operation)
 
@@ -43,7 +42,6 @@ exports.deleteOperation = function(operation){
 	for (var x in files){
 		var result = findRemoveSync(path, {files: files[x].replace(path,"") })
 	}	
-
 
 }
 

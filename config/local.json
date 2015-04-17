@@ -9,7 +9,10 @@
       "base"                : "/Users/matt/Desktop/data/extracts/",
       "archivesCollections" : "archives_collections.json",
       "archivesComponents" : "archives_components.json",
-      "archivesComponentsSplit" : "archives_components_split/"
+      "archivesComponentsSplit" : "archives_components_split/",
+      "mmsChildrenSplit" : "mms_children_split/"
+
+      
     }
   },
 
