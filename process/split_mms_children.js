@@ -67,9 +67,6 @@ exports.splitChildren = function(pathToMmsExtract, cb){
 
 	})
 	
-	cb = function(){console.log("DONNNNNNE")}
-
-
 	parser.on('end', function(obj) {
 		//the last one
 		var tmp = fs.createWriteStream(pathToMmsSplitDir + lastId + '.json',{'flags': 'a'})
@@ -160,10 +157,6 @@ exports.splitChildren = function(pathToMmsExtract, cb){
 
 
 //set it for testing
-exports.setExtractsPath = function(path){
-	pathToComponentsExtract = path
-}
-//set it for testing
 exports.setExtractsSplitPath = function(path){
-	pathToComponentsSplitDir = path
+	pathToMmsSplitDir = path
 }
