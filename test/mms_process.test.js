@@ -44,4 +44,35 @@ describe('mssProcess', function () {
 		mmsProcess.streamRecords(options)	
 	})
 
+
+	it('should return a hiearchy map of a collection by passsing the collection uuid', function (done) {
+
+		mmsProcess.setExtractsSplitPath("./test/data/childrenSplits/")
+
+		//this is a test file in the data dir
+		mmsProcess.returnChildHierarchyLayout('8122ebf0-c5f4-012f-59ef-58d385a7bc34', function(hierarchyMap){
+
+			//console.log(hierarchyMap)
+
+			for (var x in hierarchyMap){
+
+				hierarchyMap[x].should.have.property('parent')
+				hierarchyMap[x].should.have.property('depth')
+				hierarchyMap[x].should.have.property('parentName')
+				hierarchyMap[x].should.have.property('name')
+				hierarchyMap[x].should.have.property('data')
+				hierarchyMap[x].should.have.property('hasChildren')
+				hierarchyMap[x].should.have.property('idents')
+
+			}
+
+
+			done()
+		})
+
+
+	})
+
+
+
 })

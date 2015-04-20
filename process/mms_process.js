@@ -24,6 +24,7 @@ var idThesaurus = config.get('Thesaurus')['mms']
 //used for testing, so we can point to test files if we need to
 var setPathOverride = false
 
+var pathToMmsSplitDir = config.get('Storage')['extracts']['base'] + config.get('Storage')['extracts']['mmsChildrenSplit']
 
 
 
@@ -183,10 +184,27 @@ exports.extractIds = function(record){
 
 				}
 
+
+
 				if (idThesaurus[type]){
+
+					//blah
+					value=value.replace('archives_components_','')
+
+					//this might happen, just to keep track of it
+					if (idents[idThesaurus[type]]){
+						exceptionReport.log("mms process","overwriting identifiers",type + ":" + JSON.stringify(record))
+					}
+
 					idents[idThesaurus[type]] = value
+
+
+
+
+
 				}else{
 					exceptionReport.log("mms process","new identifier",n.toString())
+
 				}
 
 			}
@@ -203,7 +221,7 @@ exports.extractIds = function(record){
 
 
 			if (n.name() == 'titleInfo'){
-				idents['title'] = n.text()
+				idents['title'] = n.text().trim()
 
 
 			}
@@ -224,8 +242,109 @@ exports.extractIds = function(record){
 }
 
 
+//given a mms collection file (split children) process it and return the hierarch layout
+exports.returnChildHierarchyLayout = function(collectionUuid, cb){
+
+	var hierarchyMap = {}
+
+
+	//return if we got file problems
+	var stream = fs.createReadStream(pathToMmsSplitDir + collectionUuid + ".json", {encoding: 'utf8'})
+
+	stream.on('error', function (error) {
+		console.log("Caught", error)
+		if (cb) cb()
+	})
+	
+
+
+
+	//parse it
+	var parser = JSONStream.parse('*')
+
+
+	//this is the function that will be called for each data line in the file
+	var processData = es.mapSync(function (data) {
+
+		//make an entry
+		hierarchyMap[data['uuid']] = {}
+
+
+		hierarchyMap[data['uuid']]['matchedArchives'] = false
+		hierarchyMap[data['uuid']]['data'] = data
+
+		if (data['d_type'] == 'Container'){
+
+			//is it's parent the collection?
+			if (data['solr_doc_hash']['container_uuid']){
+
+				//no
+				hierarchyMap[data['uuid']]['depth'] = hierarchyMap[  data['solr_doc_hash']['container_uuid']  ]['depth'] + 1
+				hierarchyMap[data['uuid']]['parent'] = data['solr_doc_hash']['container_uuid']
+				hierarchyMap[data['uuid']]['parentName'] = data['solr_doc_hash']['container_name']
+				hierarchyMap[data['uuid']]['parentTitle'] = hierarchyMap[  data['solr_doc_hash']['container_uuid']  ]['idents']['title']
+				hierarchyMap[data['uuid']]['hasChildren'] = true
+				hierarchyMap[data['uuid']]['idents'] = exports.extractIds(data)
+
+
+
+
+			}else{
+
+				//yes
+				hierarchyMap[data['uuid']]['depth'] = 1
+				hierarchyMap[data['uuid']]['parent'] = data['solr_doc_hash']['collection_uuid']
+				hierarchyMap[data['uuid']]['parentName'] = data['solr_doc_hash']['collection_name']
+				hierarchyMap[data['uuid']]['hasChildren'] = true
+				hierarchyMap[data['uuid']]['idents'] = exports.extractIds(data)
+
+
+
+			}
+
+		}else{
+
+			//item
+			hierarchyMap[data['uuid']]['depth'] = hierarchyMap[  data['solr_doc_hash']['container_uuid']  ]['depth'] + 1
+			hierarchyMap[data['uuid']]['parent'] = data['solr_doc_hash']['container_uuid']
+			hierarchyMap[data['uuid']]['parentName'] = data['solr_doc_hash']['container_name']
+			hierarchyMap[data['uuid']]['parentTitle'] = hierarchyMap[  data['solr_doc_hash']['container_uuid']  ]['idents']['title']
+			hierarchyMap[data['uuid']]['hasChildren'] = false	
+			hierarchyMap[data['uuid']]['idents'] = exports.extractIds(data)
+
+
+		}
+
+	})
+
+
+
+
+	//this event happens when the file has been completely read
+	parser.on('end', function(obj) {
+
+
+		if (cb) cb(hierarchyMap)
+
+		return hierarchyMap
+
+	})
+		
+	//kick it off, pipe the data to the json parser to the data processor function processData
+	stream.pipe(parser).pipe(processData)
+
+
+
+}
+
+
 //override the path if we are testing
 exports.setPathOverride = function(path){
 	setPathOverride = path
+}
+
+
+exports.setExtractsSplitPath = function(path){
+	pathToMmsSplitDir = path
 }
 

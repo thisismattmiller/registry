@@ -32,10 +32,53 @@ exports.splitComponents = function(cb){
 
 			if (lastId != data['collection_id']){
 
+				//if the id changes then we are on another collection unless they are out of order,
+				//in that case open up the old file and read it in so we can write it all out again
+				//hopefully that does not happen too often
 				if (lastId){
-					var tmp = fs.createWriteStream(pathToComponentsSplitDir + lastId + '.json')
-					tmp.end(JSON.stringify(components))
-					process.stdout.write("Total Collections Split: "  + ++count + "\r")
+
+
+					try{
+
+						var writtenRecords = fs.readFileSync(pathToComponentsSplitDir + lastId + '.json')
+
+						writtenRecords = JSON.parse(writtenRecords).concat(components)
+						var tmp = fs.createWriteStream(pathToComponentsSplitDir + lastId + '.json')
+						tmp.end(JSON.stringify(writtenRecords))
+
+
+					}catch  (e) {
+
+						var tmp = fs.createWriteStream(pathToComponentsSplitDir + lastId + '.json')
+						tmp.end(JSON.stringify(components))
+						process.stdout.write("Total Collections Split: "  + ++count + "\r")
+
+					}
+
+					// fs.readFile(pathToComponentsSplitDir + lastId + '.json', "utf8", function(err, oldData) {
+						
+					// 	if (err){
+
+					// 		//there was no file, this is the first file, just write it out
+					// 		var tmp = fs.createWriteStream(pathToComponentsSplitDir + lastId + '.json')
+					// 		tmp.end(JSON.stringify(components))
+					// 		process.stdout.write("Total Collections Split: "  + ++count + "\r")
+
+					// 	}else{
+
+
+					// 		//that worked, we now have the file, combine the old and new data
+					// 		var writtenRecords = JSON.parse(oldData).concat(components)
+
+					// 		//write out the combined data
+					// 		var tmp = fs.createWriteStream(pathToComponentsSplitDir + lastId + '.json')
+					// 		tmp.end(JSON.stringify(writtenRecords))
+
+					// 	}
+
+
+					// });
+					
 				}
 
 				components = []
