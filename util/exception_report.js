@@ -27,6 +27,14 @@ exports.log = function(operation,type,data){
 	var log = fs.createWriteStream(path + operation + '.' + type + '.txt', {'flags': 'a'})
 	log.end(JSON.stringify({ type: type,  operation: operation, data : data }) + "\n" );
 
+	log.on('error', function(error) {
+
+		console.log("Error writing log file:",error.code)
+
+
+	})
+
+
 }
 
 exports.deleteAll = function(){

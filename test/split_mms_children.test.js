@@ -18,8 +18,6 @@ describe('mmsChildrenSplit', function () {
 			//these are the components's parent collection ids in the  in the test file
 			// var expected = ['1','5917','5916']
 
-			console.log("dunnnn")
-
 			//these are collections in the mms tes file
 			var expected = ["5cd94760-c52a-012f-bcd4-3c075448cc4b.json", "45a50ab0-c61e-012f-e73f-58d385a7bc34.json", "50546ca0-c5f2-012f-d4c9-58d385a7bc34.json", "a0fc4ef0-c6d3-012f-6b4e-58d385a7bc34.json", "e5114e30-c52f-012f-993c-58d385a7bc34.json" ]
 

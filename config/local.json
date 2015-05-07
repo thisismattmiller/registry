@@ -10,9 +10,12 @@
       "archivesCollections" : "archives_collections.json",
       "archivesComponents" : "archives_components.json",
       "archivesComponentsSplit" : "archives_components_split/",
-      "mmsChildrenSplit" : "mms_children_split/"
-
-      
+      "mmsChildrenSplit" : "mms_children_split/"      
+    },
+    "results": {
+      "base" : "/Users/matt/Desktop/data/results/",
+      "mmsChildrenMatchedCollection" : "/Users/matt/Desktop/data/results/mmsChildrenChildrenMatchedCollection/",
+      "archivesChildrenMatchedCollection" : "/Users/matt/Desktop/data/results/archivesChildrenMatchedCollection/"
     }
   },
 

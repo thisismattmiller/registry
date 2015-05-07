@@ -38,10 +38,13 @@ exports.splitComponents = function(cb){
 				if (lastId){
 
 
+					//try to open the oldfile
 					try{
+
 
 						var writtenRecords = fs.readFileSync(pathToComponentsSplitDir + lastId + '.json')
 
+						//that worked, we now have the file, combine the old and new data and write out
 						writtenRecords = JSON.parse(writtenRecords).concat(components)
 						var tmp = fs.createWriteStream(pathToComponentsSplitDir + lastId + '.json')
 						tmp.end(JSON.stringify(writtenRecords))
@@ -49,12 +52,14 @@ exports.splitComponents = function(cb){
 
 					}catch  (e) {
 
+						//there was no file, this is the first file, just write it out
 						var tmp = fs.createWriteStream(pathToComponentsSplitDir + lastId + '.json')
 						tmp.end(JSON.stringify(components))
 						process.stdout.write("Total Collections Split: "  + ++count + "\r")
 
 					}
 
+					//doing it async would mean pausing the pipe map emitter, so lets just do it sync
 					// fs.readFile(pathToComponentsSplitDir + lastId + '.json', "utf8", function(err, oldData) {
 						
 					// 	if (err){

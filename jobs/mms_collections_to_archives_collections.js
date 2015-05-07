@@ -20,6 +20,9 @@ var pathToMmsExtracts = config.get('Storage')['outputPaths']['mms']
 
 var pathToArchivesOutput = config.get('Storage')['outputPaths']['archives']
 
+var pathToResultsOutput = config.get('Storage')['results']['base']
+
+
 //load from the config unless overridden
 exports.loadDivisionsAbbreviations = function(custom){
 
@@ -63,7 +66,7 @@ exports.process = function(options,cb){
 		}		
 	}
 
-	var totalRecordsDone = 0, totalMatches = 0, matchReport = {}, allMatches = [], titleMatches = []
+	var totalRecordsDone = 0, totalMatches = 0, matchReport = {}, allMatches = [], titleMatches = [], allMMS = {}
 
 	//load the mms division that need to be processed through the archives comparison
 	exports.loadDivisionsAbbreviations()
@@ -96,6 +99,11 @@ exports.process = function(options,cb){
 						var matchedArchivesIds = []
 						var matches = []
 
+						allMMS[mmsIdents['mmsUuid']] = mmsIdents
+						allMMS[mmsIdents['mmsUuid']]['matchedArchives'] = false
+						allMMS[mmsIdents['mmsUuid']]['data'] = data
+
+
 						//loop through each normalized ident
 						for (var normalizedId in mmsIdentsNormalized){
 
@@ -123,6 +131,8 @@ exports.process = function(options,cb){
 											}
 
 											archivesLoad.markAsMmsMatched(archivesCollections[key]['mssDb'])
+
+											allMMS[mmsIdents['mmsUuid']]['matchedArchives'] = true
 
 											archivesCollections[key]['matchMms'] = mmsIdents
 
@@ -164,6 +174,8 @@ exports.process = function(options,cb){
 											if (r>=0.75){
 
 												mmsIdents['titleMatch'] = r
+
+												allMMS[mmsIdents['mmsUuid']]['matchedArchives'] = true
 
 												if (!archivesCollections[key]['matchedMmsTitle']){
 													archivesCollections[key]['matchedMmsTitle'] = [mmsIdents]
@@ -253,6 +265,9 @@ exports.process = function(options,cb){
 
 								archivesLoad.markAsMmsMatched(archivesCollections[key]['mssDb'])
 
+
+								allMMS[ archivesCollections[key]['matchedMmsTitle'][x]['mmsUuid'] ]['matchedArchives'] = true
+
 								titleMatches.push(
 									{
 										"mms" 	   : archivesCollections[key]['matchedMmsTitle'][x],
@@ -278,6 +293,9 @@ exports.process = function(options,cb){
 			//output results
 
 
+			//TODO expand more collection matching criteria
+
+
 
 
 
@@ -295,32 +313,65 @@ exports.process = function(options,cb){
 				titleMatches: titleMatches
 			}		
 
+			
+
+
+
+
 
 			//write out all the matches
-			var ws = fs.createWriteStream(pathToArchivesOutput + 'archives_to_mms_collections.json')
+			var ws = fs.createWriteStream(pathToResultsOutput + 'archives_to_mms_collections.json')
 			ws.end(JSON.stringify(returnVal));
 
-			//write out the archives extract now updated with matched or not
-			var rs = new readable({objectMode: true})
-			var outfile = fs.createWriteStream(pathToArchivesOutput + 'archives_collections.json');
-			var stringify = jsonStream.stringify("[\n",",\n","\n]\n");
-			rs._read = function () {};
-			rs.pipe(stringify).pipe(outfile);
 
-			for (var key in archivesCollections){
+			//write out all the mms non matches
+			var rs_mmsAll = new readable({objectMode: true})
+			var outfile_mmsAll = fs.createWriteStream(pathToResultsOutput + 'mms_no_match_to_archives_collections.json');
+			var stringify_mmsAll = jsonStream.stringify("[\n",",\n","\n]\n");
+			rs_mmsAll._read = function () {};
+			rs_mmsAll.pipe(stringify_mmsAll).pipe(outfile_mmsAll);
 
-				rs.push(archivesCollections[key])
+			for (var key in allMMS){
+
+				
+				if (allMMS[key]['matchedArchives'] === false) rs_mmsAll.push(allMMS[key])
+
 
 			} 
 
-			rs.push(null)
+			rs_mmsAll.push(null)
 
-			outfile.on('finish', function () {
+			outfile_mmsAll.on('finish', function () {
+				
 
 
-				if (cb) cb(returnVal)
+				//write out the archives extract now updated with matched or not
+				var rs = new readable({objectMode: true})
+				var outfile = fs.createWriteStream(pathToResultsOutput + 'archives_collections.json');
+				var stringify = jsonStream.stringify("[\n",",\n","\n]\n");
+				rs._read = function () {};
+				rs.pipe(stringify).pipe(outfile);
+
+				for (var key in archivesCollections){
+
+					rs.push(archivesCollections[key])
+
+				} 
+
+				rs.push(null)
+
+				outfile.on('finish', function () {
+					if (cb) cb(returnVal)
+				});
+
+
+
 
 			});
+
+
+
+
 
 
 			
@@ -345,4 +396,9 @@ exports.setExtractsPath = function(path){
 //set it for testing
 exports.setArchivesOutputPath = function(path){
 	pathToArchivesOutput = path
+}
+
+//set it for testing
+exports.setResultsOutput = function(path){
+	pathToResultsOutput = path
 }

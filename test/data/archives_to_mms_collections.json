@@ -1,0 +1,44 @@
+{
+    "matchReport": {
+        "bNumber": 1
+    },
+    "matches": [
+        [
+            {
+                "archives": {
+                    "bNumber": "b15028454",
+                    "barcode": false,
+                    "callNumber": false,
+                    "date_inclusive_end": 1946,
+                    "date_inclusive_start": 1939,
+                    "keydate": "1939",
+                    "matchMms": {
+                        "bNumber": "b15028454",
+                        "callNumber": "Sc Micro R-906",
+                        "catnyp": "b6685398",
+                        "hades": "2034742",
+                        "mmsDb": "29241",
+                        "mmsType": "Collection",
+                        "mmsUuid": "8a291280-c61e-012f-5f81-58d385a7bc34",
+                        "title": "Harriet Tubman research material, 1939-1940."
+                    },
+                    "matchedMms": true,
+                    "mss": "20868",
+                    "mssDb": 1272,
+                    "origination": "Conrad, Earl",
+                    "title": "Harriet Tubman research material"
+                },
+                "mms": {
+                    "bNumber": "b15028454",
+                    "callNumber": "Sc MG 15",
+                    "mmsDb": "41819",
+                    "mmsType": "Collection",
+                    "mmsUuid": "49ff04f0-a5ab-0132-7e32-58d385a7b928",
+                    "mss": "20868",
+                    "title": "The Earl Conrad/Harriet Tubman Research Materials"
+                }
+            }
+        ]
+    ],
+    "titleMatches": []
+}

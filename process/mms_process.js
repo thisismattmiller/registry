@@ -126,6 +126,34 @@ exports.extractIds = function(record){
 		idents['mmsUuid'] = record['uuid']
 	}
 
+	if (record['solr_doc_hash']){
+
+		if (record['solr_doc_hash']['identifier_local_image_id']){
+
+
+			if (typeof record['solr_doc_hash']['identifier_local_image_id'] === 'string'){
+				idents['captureIds'] = [record['solr_doc_hash']['identifier_local_image_id'] ]
+			}else{
+				idents['captureIds'] = []
+				for (var x in record['solr_doc_hash']['identifier_local_image_id'] ){
+
+					if (record['solr_doc_hash']['identifier_local_image_id'][x] !== null){
+						idents['captureIds'].push(record['solr_doc_hash']['identifier_local_image_id'][x])
+					}
+
+				}
+				
+			}
+
+
+
+
+
+		}
+	}
+
+
+
 	//the solr doc hash title is sometimes messed up with encoding errors
 	// so pull it out below from the xml
 	// if (record['solr_doc_hash']['title']){
@@ -154,7 +182,7 @@ exports.extractIds = function(record){
 			return idents
 		}
 
-
+		idents['dates'] = []
 
 
 
@@ -222,9 +250,33 @@ exports.extractIds = function(record){
 
 			if (n.name() == 'titleInfo'){
 				idents['title'] = n.text().trim()
+			}
 
+
+			if (n.name() == 'originInfo'){
+				idents['originInfo'] = n.text().trim()
+
+
+				//also get the specifc types of dates
+
+				for (var aGrandChild in n.childNodes()){
+					var nn = n.childNodes()[aGrandChild]
+					if (nn.name() == 'dateIssued'){
+						idents['dateIssued'] = nn.text().trim()
+						idents['dates'].push(nn.text().trim())
+					}
+					if (nn.name() == 'dateCreated'){
+						idents['dateCreated'] = nn.text().trim()
+						idents['dates'].push(nn.text().trim())
+					}
+
+				}
 
 			}
+
+
+
+
 
 		}
 
@@ -235,6 +287,20 @@ exports.extractIds = function(record){
 	if (idents['bNumber']){
 		idents['bNumber'] = utils.normalizeBnumber(idents['bNumber'])
 	}
+
+
+	//use the date if the title is not present otherwise set it to false
+	if (!idents['title']){
+		if (idents['originInfo'])  idents['title'] = idents['originInfo']
+	}
+
+
+	if (!idents['title']){
+		idents['title'] = false
+	}
+
+
+	idents['sourceSystem'] = 'mms'
 
 
 	return idents
@@ -252,8 +318,14 @@ exports.returnChildHierarchyLayout = function(collectionUuid, cb){
 	var stream = fs.createReadStream(pathToMmsSplitDir + collectionUuid + ".json", {encoding: 'utf8'})
 
 	stream.on('error', function (error) {
-		console.log("Caught", error)
-		if (cb) cb()
+		
+		if (error.code == 'ENOENT'){
+			console.log(collectionUuid, "has no children")
+		}else{
+			console.log("Caught", error)
+		}
+		
+		if (cb) cb(false)
 	})
 	
 
@@ -271,6 +343,7 @@ exports.returnChildHierarchyLayout = function(collectionUuid, cb){
 
 
 		hierarchyMap[data['uuid']]['matchedArchives'] = false
+		hierarchyMap[data['uuid']]['parentName'] = false
 		hierarchyMap[data['uuid']]['data'] = data
 
 		if (data['d_type'] == 'Container'){
@@ -279,15 +352,17 @@ exports.returnChildHierarchyLayout = function(collectionUuid, cb){
 			if (data['solr_doc_hash']['container_uuid']){
 
 				//no
-				hierarchyMap[data['uuid']]['depth'] = hierarchyMap[  data['solr_doc_hash']['container_uuid']  ]['depth'] + 1
+				//do we have this container in the hierarchy yet? If so reference it otherwise we will do it at the end
+				if (hierarchyMap[  data['solr_doc_hash']['container_uuid']  ]){
+					hierarchyMap[data['uuid']]['depth'] = hierarchyMap[  data['solr_doc_hash']['container_uuid']  ]['depth'] + 1
+					hierarchyMap[data['uuid']]['parentTitle'] = hierarchyMap[  data['solr_doc_hash']['container_uuid']  ]['idents']['title']
+				}
+
 				hierarchyMap[data['uuid']]['parent'] = data['solr_doc_hash']['container_uuid']
 				hierarchyMap[data['uuid']]['parentName'] = data['solr_doc_hash']['container_name']
-				hierarchyMap[data['uuid']]['parentTitle'] = hierarchyMap[  data['solr_doc_hash']['container_uuid']  ]['idents']['title']
 				hierarchyMap[data['uuid']]['hasChildren'] = true
 				hierarchyMap[data['uuid']]['idents'] = exports.extractIds(data)
-
-
-
+				hierarchyMap[data['uuid']]['id'] = data['uuid']
 
 			}else{
 
@@ -297,23 +372,58 @@ exports.returnChildHierarchyLayout = function(collectionUuid, cb){
 				hierarchyMap[data['uuid']]['parentName'] = data['solr_doc_hash']['collection_name']
 				hierarchyMap[data['uuid']]['hasChildren'] = true
 				hierarchyMap[data['uuid']]['idents'] = exports.extractIds(data)
-
-
+				hierarchyMap[data['uuid']]['id'] = data['uuid']
 
 			}
 
 		}else{
 
+
 			//item
-			hierarchyMap[data['uuid']]['depth'] = hierarchyMap[  data['solr_doc_hash']['container_uuid']  ]['depth'] + 1
-			hierarchyMap[data['uuid']]['parent'] = data['solr_doc_hash']['container_uuid']
-			hierarchyMap[data['uuid']]['parentName'] = data['solr_doc_hash']['container_name']
-			hierarchyMap[data['uuid']]['parentTitle'] = hierarchyMap[  data['solr_doc_hash']['container_uuid']  ]['idents']['title']
-			hierarchyMap[data['uuid']]['hasChildren'] = false	
-			hierarchyMap[data['uuid']]['idents'] = exports.extractIds(data)
+
+			//if it has no container_uuid something is wrong, maybe a deleted record
+			if (data['solr_doc_hash']['container_uuid']){
+
+
+				//do we have this container in the hierarchy yet? If so reference it otherwise we will do it at the end
+				if (hierarchyMap[  data['solr_doc_hash']['container_uuid']  ]){
+					hierarchyMap[data['uuid']]['depth'] = hierarchyMap[  data['solr_doc_hash']['container_uuid']  ]['depth'] + 1
+					hierarchyMap[data['uuid']]['parentTitle'] = hierarchyMap[  data['solr_doc_hash']['container_uuid']  ]['idents']['title']
+				}
+
+				hierarchyMap[data['uuid']]['parent'] = data['solr_doc_hash']['container_uuid']
+				hierarchyMap[data['uuid']]['parentName'] = data['solr_doc_hash']['container_name']
+				hierarchyMap[data['uuid']]['hasChildren'] = false	
+				hierarchyMap[data['uuid']]['idents'] = exports.extractIds(data)
+				hierarchyMap[data['uuid']]['id'] = data['uuid']
+
+
+			}else{
+
+				//exceptionReport.log("mms Hiearchy Map","missing container_uuid",data)
+
+				//but we still want something, not just undefined for idents
+				hierarchyMap[data['uuid']]['depth'] = 1
+				hierarchyMap[data['uuid']]['parent'] = ""
+				hierarchyMap[data['uuid']]['parentName'] = ""
+				hierarchyMap[data['uuid']]['parentTitle'] = ""
+				hierarchyMap[data['uuid']]['hasChildren'] = false
+				hierarchyMap[data['uuid']]['idents'] = exports.extractIds(data)
+				hierarchyMap[data['uuid']]['id'] = data['uuid']
+
+			}
 
 
 		}
+
+
+		//we just want to make sure that nothing is undefined. We rather has false
+		for (var x in hierarchyMap[data['uuid']]){
+			if (typeof hierarchyMap[data['uuid']][x] == 'undefined') hierarchyMap[data['uuid']][x] = false
+		}
+
+
+
 
 	})
 
@@ -322,6 +432,34 @@ exports.returnChildHierarchyLayout = function(collectionUuid, cb){
 
 	//this event happens when the file has been completely read
 	parser.on('end', function(obj) {
+
+
+		//if the containers were out of order some depth values and parent titles will not have been set, so loop over and make sure everything looks okay
+		for (var x in hierarchyMap){
+
+			if (!hierarchyMap[x]['depth'] ){
+
+
+				if (hierarchyMap[x]['data']['solr_doc_hash']['container_uuid'] ){
+
+					//if it is now available then set it otherwise false
+					if (hierarchyMap[ hierarchyMap[x]['data']['solr_doc_hash']['container_uuid']   ]){
+						hierarchyMap[x]['depth'] = hierarchyMap[  hierarchyMap[x]['data']['solr_doc_hash']['container_uuid']  ]['depth'] + 1
+						hierarchyMap[x]['parentTitle'] = hierarchyMap[  hierarchyMap[x]['data']['solr_doc_hash']['container_uuid']  ]['idents']['title']
+					}
+
+				}
+
+
+				//if not there set as false
+				if (!hierarchyMap[x]['depth']) hierarchyMap[x]['depth'] = false
+				if (!hierarchyMap[x]['parentTitle']) hierarchyMap[x]['parentTitle'] = false
+
+
+			}
+
+
+		}
 
 
 		if (cb) cb(hierarchyMap)
