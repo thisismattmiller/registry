@@ -1,36 +1,36 @@
 {
-    "analyze": true,
-    "author": "",
-
-    "contributors": [
-        {
-            "email": "",
-            "name": ""
-        }
-    ],
-    "dependencies": {
-        "JSONStream": "0.10.0",
-        "event-stream": "3.2.2",
-        "config": "1.12.0",
-        "string": "3.0.0 ",
-        "find-remove" : "0.2.5",
-        "glob": "5.0.3",
-        "libxmljs" : "0.14.0",
-        "async" : "0.9.0",
-        "string_score" : "0.1.22",
-        "line-by-line" : "0.1.3"
-    },
-    "devDependencies": {
-        "mocha": "2.1.0",
-        "should": "5.0.1"
-    },
-    "scripts":{
-      "test" : "mocha test"
-    },
-    "description": "",
-    "license": "MIT",
-    "name": "registry",
-    "preferGlobal": false,
-    "private": true,
-    "version": "0.0.1"
+  "analyze": true,
+  "author": "",
+  "contributors": [
+    {
+      "email": "",
+      "name": ""
+    }
+  ],
+  "dependencies": {
+    "JSONStream": "0.10.0",
+    "async": "0.9.0",
+    "config": "1.12.0",
+    "event-stream": "3.2.2",
+    "find-remove": "0.2.5",
+    "glob": "5.0.3",
+    "libxmljs": "0.14.0",
+    "line-by-line": "0.1.3",
+    "request": "^2.57.0",
+    "string": "3.0.0 ",
+    "string_score": "0.1.22"
+  },
+  "devDependencies": {
+    "mocha": "2.1.0",
+    "should": "5.0.1"
+  },
+  "scripts": {
+    "test": "mocha test"
+  },
+  "description": "",
+  "license": "MIT",
+  "name": "registry",
+  "preferGlobal": false,
+  "private": true,
+  "version": "0.0.1"
 }

@@ -6,8 +6,46 @@ var archivesLoad = require("../process/archives_collections.js")
 var exceptionReport = require("../util/exception_report.js")
 var archivesComponentsSplit = require("../process/split_archives_components.js")
 var mmsChildrenSplit = require("../process/split_mms_children.js")
+var catalogSplit = require("../process/split_catalog_extract.js")
+var catalogProcess = require("../process/catalog_process.js")
 
-archivesComponentsSplit.splitComponents()
+
+
+catalogSplit.createClassifyExtract()
+
+//catalogSplit.createCallNumberUniqueAnalyze()
+
+//catalogSplit.createCallNumberUnique()
+
+
+
+//catalogSplit.createCallNumberTms()
+
+
+// catalogProcess.loadBnumbers(function(data){
+
+
+// 	console.log(Object.keys(data).length)
+
+// 	setTimeout(function(){},20000)
+
+
+// })
+
+
+// catalogSplit.createBnumberLookup(function(){
+
+// 	console.log("done")
+
+
+// })
+
+//catalogSplit.splitResearchFromFull()
+
+
+
+
+//archivesComponentsSplit.splitComponents()
 
 
 //mmsChildrenSplit.splitChildren("/Users/matt/Downloads/last_import.json")
@@ -49,7 +87,7 @@ archivesComponentsSplit.splitComponents()
 
 //archivesLoad.matchIdentifier("SADFsad fasd fadsf DSAF &gt; 32423 ~@#$% FDGSDFG Whap whap")
 
-//mmsReport.process("/Users/matt/Downloads/last_import.json")
+//mmsReport.process("/Users/matt/Desktop/2015-5-15.json")
 //mmsReport.process("/Users/matt/Downloads/mms_test.json")
 
 //mmsHiearchy.process("/Users/matt/Downloads/2014-9-3.json")

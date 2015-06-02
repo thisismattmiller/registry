@@ -5,7 +5,7 @@ var fs = require("fs")
 
 describe('mmsChildrenToArchivesComponents', function () {
 
-	this.timeout(25000);
+	this.timeout(500000);
 
 
 	it('should load the mms->archives collection report and match the collection\'s children', function (done) {
@@ -30,7 +30,7 @@ describe('mmsChildrenToArchivesComponents', function () {
 
 
 		})
-		
+
 	})
 
 })
