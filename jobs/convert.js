@@ -11,7 +11,7 @@ var catalogProcess = require("../process/catalog_process.js")
 
 
 
-catalogSplit.createClassifyExtract()
+//catalogSplit.createClassifyExtract()
 
 //catalogSplit.createCallNumberUniqueAnalyze()
 
@@ -90,4 +90,4 @@ catalogSplit.createClassifyExtract()
 //mmsReport.process("/Users/matt/Desktop/2015-5-15.json")
 //mmsReport.process("/Users/matt/Downloads/mms_test.json")
 
-//mmsHiearchy.process("/Users/matt/Downloads/2014-9-3.json")
+mmsReport.process("/Users/matt/Downloads/2015-6-2.json")

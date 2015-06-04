@@ -1,5 +1,6 @@
 var config = require("config"),
 	glob = require("glob"),
+	async = require("async"),
 	fs = require('fs')
 
 
@@ -9,47 +10,43 @@ var pathToCatalogClassifyResults = config.get('Storage')['extracts']['catalogCla
 
 
 
-
-
-
-
-
-
-
 glob(pathToCatalogClassifyResults + "*.json", {}, function (er, files) {
-  // files is an array of filenames.
-  // If the `nonull` option is set, and nothing
-  // was found, then files is ["**/*.js"]
-  // er is an error object or null.
-
-  console.log(files.length)
-
-  var foundSomethingTrue = 0, foundSomethingFalse = 0
-
-  for (var file in files){
-
-  	file = files[file]
-
-
-  	console.log(file)
-
- 	var data = fs.readFileSync(file)
-
- 	var obj = JSON.parse(data)
-
- 	if (obj.foundSomething){
- 		foundSomethingTrue++
- 	}else{
- 		foundSomethingFalse++
- 	}
 
 
 
+  //give it a second to make sure all files are settled
+  console.log("Getting ready to compress",files.length,"files")
+  setTimeout(function(){
 
 
-  }
+	async.eachSeries(files, function(file, callback){
 
-  console.log(files.length, foundSomethingTrue,foundSomethingFalse)
+
+		if (file.search('all.json') === -1) {
+
+
+			var data = fs.readFileSync(file)
+
+			var allData = fs.createWriteStream(pathToCatalogClassifyResults + 'all.json', {'flags': 'a'})
+
+			allData.end(data + "\n")
+
+			allData.on("finish",function(){
+
+				console.log(file)
+				callback()
+
+			})
+
+
+		}
+
+
+	})
+
+
+
+  },5000)
 
 
 

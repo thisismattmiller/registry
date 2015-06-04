@@ -143,6 +143,16 @@ if (cluster.isMaster) {
 	  	console.log("\nSpawned",Object.keys(workers).length, "workers" )
 
 
+	  	//make sure they restart if they hit a bad record
+		cluster.on('exit', function(worker, code, signal) {
+			console.log('worker %d died (%s). restarting...',
+			worker.process.pid, signal || code);
+			cluster.fork();
+		});
+
+
+
+
 	  	//this is the update and cleanup watcher, make sure no records are checked out for a long time and update to screen status
 	  	setInterval(function(){
 
@@ -186,7 +196,7 @@ if (cluster.isMaster) {
 
 
 
-	  	},1000)
+	  	},2000)
 
 
 

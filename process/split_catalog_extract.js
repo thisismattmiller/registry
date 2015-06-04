@@ -298,14 +298,14 @@ exports.splitResearchFromFull = function(cb){
 	counter = 0
 	var buffer = []
 
-	var lr = new lineByLineReader(pathToCatalogExtract);
+	var lr = new lineByLineReader(pathToCatalogExtract)
 
 
-	var rs = new readable({objectMode: true});
-	var outfile = fs.createWriteStream(pathToCatalogResearchOutput);
-	var stringify = jsonStream.stringify("[\n",",\n","\n]\n");
-	rs._read = function () {};
-	rs.pipe(stringify).pipe(outfile);
+	var rs = new readable({objectMode: true})
+	var outfile = fs.createWriteStream(pathToCatalogResearchOutput)
+	var stringify = jsonStream.stringify("[\n",",\n","\n]\n")
+	rs._read = function () {}
+	rs.pipe(stringify).pipe(outfile)
 
 
 
@@ -655,6 +655,8 @@ exports.createClassifyExtract = function(cb){
 
 	var oclcRegExp = new RegExp(/\(ocolc\).*?"/ig)
 
+	var fiveOrMoreNumbersRegExp = new RegExp(/[0-9]{5}/i)
+
 	var totalOclc = 0, totalIsbn = 0, totalIssn = 0, currentPos = 0, totalPossibleOclc = 0
 
 	var doneReading = false, isPaused = false
@@ -750,6 +752,30 @@ exports.createClassifyExtract = function(cb){
 				}
 				title = a + " " + n + b
 			}
+
+			//look in the 9xx fields we sometimes store oclc numbers in $y
+			if (x.marcTag){
+				if (x.marcTag.charAt(0) == '9'){
+
+
+					for (var subfield in x.subfields){
+						subfield = x.subfields[subfield]
+
+						if (subfield.content && subfield.tag){
+							if (!isNaN(subfield.content) && subfield.tag == 'y'){
+								oclcNumbers.push(subfield.content)
+							}
+						}
+
+					}
+
+
+
+
+				}
+			}
+
+
 		}
 
 		if (f003 && f001){
