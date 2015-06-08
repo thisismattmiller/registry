@@ -11,6 +11,9 @@
       "archivesComponents" : "archives_components.json",
       "archivesComponentsSplit" : "archives_components_split/",
       "mmsChildrenSplit" : "mms_children_split/",
+
+      "billingsStarDump" : "/Users/matt/Desktop/data/extracts/billings_star_groups_orginal.txt",
+
       "catalogFull" : "/Users/matt/Desktop/catalog.json",
       "catalogResearch" : "/Users/matt/Desktop/data/results/catalog_research.json",
       "catalogBindex" : "/Users/matt/Desktop/data/results/catalog_bindex.json",

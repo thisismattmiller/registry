@@ -7,7 +7,6 @@ var config = require("config"),
 
 
 var pathToCatalogClassify = config.get('Storage')['extracts']['catalogClassify']
-var pathToHathiMapping = "/Users/matt/Downloads/hathi_full_20150601.txt"
 var pathToHathiMappingResults = "/Users/matt/Downloads/hathi_full_20150601_pd.txt"
 
 //var pathToHathiMappingResults = "/Users/matt/Downloads/hathi_tmp"
@@ -29,6 +28,9 @@ var processData = es.mapSync(function (data) {
 
 	for (var x in data.oclc){
 		x = data.oclc[x]
+
+		//some dirty data...
+		if (x == '10' || x == '12') continue
 
 		if (!indexOclc[x]){
 			indexOclc[x] = { ids: [data.volumeId], title: data.title, hathiId: data.hathiId, enumeration: {} }
@@ -108,7 +110,8 @@ parser.on('end', function(obj) {
 
 	var streamCatalog = fs.createReadStream(pathToCatalogClassify, {encoding: 'utf8'})
 	var parserCatalog = jsonStream.parse('*')
-	var totalRecords = 0, totalRecordsAdded = 0
+	var totalRecords = 0, totalRecordsAdded = 0, totalSuppressed = 0
+	var bIndex = {}
 
 	//this is the function that will be called for each data line in the file
 	var processData = es.mapSync(function (data) {
@@ -123,6 +126,8 @@ parser.on('end', function(obj) {
 			//it is in the index
 			if (indexOclc[x]){
 
+				title = indexOclc[x].title
+				hathiId = indexOclc[x].hathiId
 
 				if (typeof data.title == 'string'){
 					if (data.title.score(indexOclc[x].title,1) < 0.05){
@@ -141,7 +146,7 @@ parser.on('end', function(obj) {
 
 					//use this lookup table for later
 					volEnumerationLookup[y] = indexOclc[x].enumeration[y]
-					title = indexOclc[x].title
+
 
 					if (matchedVolume.indexOf(y) == -1){
 						matchedVolume.push(y)
@@ -164,6 +169,9 @@ parser.on('end', function(obj) {
 				//it is in the index
 				if (indexIsbn[x]){
 
+					title = indexIsbn[x].title
+					hathiId = indexIsbn[x].hathiId
+
 					if (typeof data.title == 'string'){
 						if (data.title.score(indexIsbn[x].title,1) < 0.05){
 							rsError.push(indexIsbn[x].ids.toString()+"\n")
@@ -180,8 +188,6 @@ parser.on('end', function(obj) {
 
 						//use this lookup table for later
 						volEnumerationLookup[y] = indexIsbn[x].enumeration[y]
-						title = indexIsbn[x].title
-						hathiId = indexIsbn[x].hathiId
 
 						if (matchedVolume.indexOf(y) == -1){
 							matchedVolume.push(y)
@@ -204,6 +210,10 @@ parser.on('end', function(obj) {
 			//it is in the index
 			if (indexIssn[x]){
 
+				title = indexIssn[x].title
+				hathiId = indexIssn[x].hathiId
+
+
 				if (typeof data.title == 'string'){
 					if (data.title.score(indexIssn[x].title,1) < 0.05){
 						rsError.push(indexIssn[x].ids.toString()+"\n")
@@ -220,9 +230,6 @@ parser.on('end', function(obj) {
 
 					//use this lookup table for later
 					volEnumerationLookup[y] = indexIssn[x].enumeration[y]
-					title = indexIssn[x].title
-					hathiId = indexIssn[x].hathiId
-
 
 					if (matchedVolume.indexOf(y) == -1){
 						matchedVolume.push(y)
@@ -237,6 +244,8 @@ parser.on('end', function(obj) {
 		if (matchedVolume.length>0) {
 
 			totalRecordsAdded++
+
+			bIndex["b" + data.bnumber] = true
 
 			//now we need to sort the matches by sources
 
@@ -270,7 +279,6 @@ parser.on('end', function(obj) {
 				}
 			}
 
-			var finalUse = []
 
 			// for (var x in sourceCount[use]){
 
@@ -280,21 +288,57 @@ parser.on('end', function(obj) {
 			// }
 
 			//just add them all
+			var addedVolumes = []
+			var finalAdd = []
 
 			for (var source in sourceCount){
 
 				for (var x in sourceCount[source]){
 
 					x = sourceCount[source][x]
-					finalUse.push({ bnumber: "b" + data.bnumber, vol: volEnumerationLookup[x],  url: 'http://hdl.handle.net/2027/' + x, hathiTitle:  title  })
+
+					var add = true
+
+					if (volEnumerationLookup[x].trim() != ''){
+						//strip out common abbr to get at the vol number
+						var vol = volEnumerationLookup[x].replace(/\./gi,'').replace(/v/gi,'').trim()
+						if (addedVolumes.indexOf(vol) == -1){
+							add = true
+							addedVolumes.push(vol)
+						}else{
+							add = false
+							//console.log("Not adding ",volEnumerationLookup[x],addedVolumes)
+						}
+
+					}
+
+					if (x.split('.')[0]=='nyp') add = true
+
+
+					var linkText = (volEnumerationLookup[x].trim() == '') ? 'Full text available via HathiTrust' : 'Full text available via HathiTrust - '
+
+
 
 					//write to file
-					rs.push("b" + data.bnumber + "\t" + volEnumerationLookup[x] + "\t"  + hathiId + "\t" + 'http://hdl.handle.net/2027/' + x + "\t" + title + "\n" )
-
+					//if (add) rs.push("b" + data.bnumber + "\t" + volEnumerationLookup[x] + "\t"  + hathiId + "\t" + 'http://hdl.handle.net/2027/' + x + "\t" + title + "\n" )
+					if (add) finalAdd.push("b" + data.bnumber + "\t" + 'http://hdl.handle.net/2027/' + x + "\t" + linkText + volEnumerationLookup[x] + "\n" )
 				}
 			}
 
+			if (finalAdd.length > 10){
 
+				//too many vols add a link to the hathi landing page
+
+				rs.push("b" + data.bnumber + "\t" + 'http://catalog.hathitrust.org/Record/' + hathiId + "\t" + 'Full text available via HathiTrust' + "\n")
+
+			}else{
+
+				for (var f in finalAdd){
+					rs.push(finalAdd[f])
+				}
+
+
+			}
 
 
 		}
@@ -304,7 +348,7 @@ parser.on('end', function(obj) {
 		totalRecords++
 		process.stdout.clearLine()
 		process.stdout.cursorTo(0)
-		process.stdout.write( "Processing: " + totalRecords +"|" + totalRecordsAdded )
+		process.stdout.write( "Processing: " + totalRecords +"|" + totalRecordsAdded)
 
 
 	})
@@ -313,6 +357,9 @@ parser.on('end', function(obj) {
 	parserCatalog.on('end', function(obj) {
 		rs.push(null)
 		rsError.push(null)
+
+		console.log("\nDone\n")
+		console.log(Object.keys(bIndex).length)
 	})
 
 

@@ -5,6 +5,7 @@ var cluster = require('cluster'),
 	jsonStream = require('JSONStream'),
 	async = require("async"),
 	request = require('request'),
+	glob = require("glob"),
 	es = require('event-stream')
 
 
@@ -17,197 +18,223 @@ var urlTitleAuthor = "http://classify.oclc.org/classify2/Classify?author={author
 var urlTitle = "http://classify.oclc.org/classify2/Classify?title={title}"
 var debug = false
 
+var pathToCatalogClassifyResults = config.get('Storage')['extracts']['catalogClassifyResults']
 
 
 if (cluster.isMaster) {
   // Fork workers.
 
-
-  //workfile location
-  var pathToCatalogClassify = config.get('Storage')['extracts']['catalogClassify']
-
-
-  //tmp
-  pathToCatalogClassify = "/Users/matt/Desktop/data/results/catalog_classify_test.json"
+  	console.log("Loading files in results directory")
+	//first findout what files are already done
+	glob(pathToCatalogClassifyResults + "*.json", {}, function (er, files) {
 
 
-  //stream the file into memory
+		for (var x in files){
 
-	var stream = fs.createReadStream(pathToCatalogClassify, {encoding: 'utf8'})
+			var split = files[x].split("/")
+			files[x] = split[split.length-1].replace(".json","").trim()
 
-	var parser = jsonStream.parse('*')
-
-	var index = {}
-
-	var workers = {}
-
-	var totalRecords = 0
-
-
-
-	//this is the function that will be called for each data line in the file
-	var processData = es.mapSync(function (data) {
-
-		data.complete = false
-		data.working = false
-		data.workingStart = 0
-
-		index[data.bnumber.toString()] = data
-
-
-		// bnumbers['b'+data.id] = true
-		totalRecords++
-		process.stdout.clearLine()
-		process.stdout.cursorTo(0)
-		process.stdout.write( "Loading: " + totalRecords )
-
-
-
-
-	})
-
-
-	parser.on('end', function(obj) {
-
-
-
-		var buildWorker = function(){
-
-			setTimeout(function(){
-
-				var worker = cluster.fork();
-
-				worker.on('message', function(msg) {
-					// we only want to intercept messages that have a chat property
-					if (msg.req) {
-
-						if (debug) console.log("Worker#", msg.req.id, "Asking for work");
-
-						if (msg.req.complete){
-
-							//the worker finished one
-							index[msg.req.complete.bnumber.toString()].complete = true
-							index[msg.req.complete.bnumber.toString()].working = false
-							index[msg.req.complete.bnumber.toString()].workingStart = Math.floor(Date.now() / 1000)
-
-							//good job :)
-
-							workers[msg.req.id.toString()].complete++
-
-
-						}
-
-						var foundWork = false
-
-						//find a new one
-						for (var x in index){
-
-							if (index[x].complete === false && index[x].working === false ){
-
-								index[x].working = true
-								if (debug) console.log("Master: Sending", index[x].bnumber )
-								worker.send({ req: { record: index[x] } })
-								foundWork = true
-
-								break
-
-							}
-						}
-
-
-						if (!foundWork){
-							console.log("No more work?")
-						}
-
-
-					}
-				});
-
-
-			}, Math.floor(Math.random() * (10000 - 0))   )
 
 		}
 
 
+		//workfile location
+		var pathToCatalogClassify = config.get('Storage')['extracts']['catalogClassify']
+
+		//doing the update staus flag
+		var workingOnStats = false
+
+		//tmp
+		//pathToCatalogClassify = "/Users/matt/Desktop/data/results/catalog_classify_test.json"
 
 
-	  	for (var i = 1; i < 16; i++) {
+		//stream the file into memory
 
-	  		workers[i.toString()] = { complete : 0 }
+		var stream = fs.createReadStream(pathToCatalogClassify, {encoding: 'utf8'})
 
-	  		buildWorker()
+		var parser = jsonStream.parse('*')
 
-	  	}
+		var index = {}
 
+		var workers = {}
 
-	  	console.log("\nSpawned",Object.keys(workers).length, "workers" )
-
-
-	  	//make sure they restart if they hit a bad record
-		cluster.on('exit', function(worker, code, signal) {
-			console.log('worker %d died (%s). restarting...',
-			worker.process.pid, signal || code);
-			cluster.fork();
-		});
-
-
-
-
-	  	//this is the update and cleanup watcher, make sure no records are checked out for a long time and update to screen status
-	  	setInterval(function(){
-
-	  		var now = Math.floor(Date.now() / 1000)
-	  		var complete = 0
-
-	  		//loop over all the records
-			for (var x in index){
-
-				//make sure it has not been checked out forever
-				if (index[x].working === true ){
-
-					//5min
-					if (index[x].workingStart - now > 300){
-						console.log("RESETING:",index[x])
-						index[x].complete = false
-						index[x].working = false
-						index[x].workingStart = 0
-					}
-				}
-
-				if (index[x].complete){
-					complete++
-				}
+		var totalRecords = 0, totalRecordsAlreadyDone = 0
 
 
 
+		//this is the function that will be called for each data line in the file
+		var processData = es.mapSync(function (data) {
+
+			if (files.indexOf(data.bnumber.toString())==-1){
+
+				data.complete = false
+				data.working = false
+				data.workingStart = 0
+
+				index[data.bnumber.toString()] = data
+
+
+			}else{
+				totalRecordsAlreadyDone++
 			}
 
-			var wString = ""
-			for (var x in workers){
-				wString = wString + x + ":" + workers[x].complete + "|"
-			}
-
-
-
+			// bnumbers['b'+data.id] = true
+			totalRecords++
 			process.stdout.clearLine()
 			process.stdout.cursorTo(0)
-			process.stdout.write( complete + "/" + totalRecords + "(" + Math.floor(complete/totalRecords*100) + ") " + wString )
+			process.stdout.write( "Loading: " + totalRecords + " | Already done from previous run:" + totalRecordsAlreadyDone )
+
+
+
+		})
+
+
+		parser.on('end', function(obj) {
+
+			console.log("\n\nGoing to work on:",Object.keys(index).length + " Records")
+
+			var buildWorker = function(){
+
+				setTimeout(function(){
+
+					var worker = cluster.fork();
+
+					worker.on('message', function(msg) {
+						// we only want to intercept messages that have a chat property
+						if (msg.req) {
+
+							if (debug) console.log("Worker#", msg.req.id, "Asking for work");
+
+							if (msg.req.complete){
+
+								//the worker finished one
+								index[msg.req.complete.bnumber.toString()].complete = true
+								index[msg.req.complete.bnumber.toString()].working = false
+								index[msg.req.complete.bnumber.toString()].workingStart = Math.floor(Date.now() / 1000)
+
+								//good job :)
+
+								workers[msg.req.id.toString()].complete++
+
+
+							}
+
+							var foundWork = false
+
+							//find a new one
+							for (var x in index){
+
+								if (index[x].complete === false && index[x].working === false ){
+
+									index[x].working = true
+									if (debug) console.log("Master: Sending", index[x].bnumber )
+									worker.send({ req: { record: index[x] } })
+									foundWork = true
+
+									break
+
+								}
+							}
+
+
+							if (!foundWork){
+								console.log("No more work?")
+							}
+
+
+						}
+					});
+
+
+				}, Math.floor(Math.random() * (10000 - 0))   )
+
+			}
 
 
 
 
-	  	},2000)
+			for (var i = 1; i < 21; i++) {
+
+				workers[i.toString()] = { complete : 0 }
+
+				buildWorker()
+
+			}
+
+
+			console.log("\nSpawned",Object.keys(workers).length, "workers" )
+
+
+			//make sure they restart if they hit a bad record
+			cluster.on('exit', function(worker, code, signal) {
+				console.log('\n\nworker %d died (%s). restarting...\n\n',
+				worker.process.pid, signal || code);
+				cluster.fork();
+			});
 
 
 
+
+			//this is the update and cleanup watcher, make sure no records are checked out for a long time and update to screen status
+			setInterval(function(){
+
+
+				if (workingOnStats) return
+
+				workingOnStats = true
+
+				var now = Math.floor(Date.now() / 1000)
+				var complete = 0
+
+				//loop over all the records
+				for (var x in index){
+
+					//make sure it has not been checked out forever
+					if (index[x].working === true ){
+
+						//5min
+						if (index[x].workingStart - now > 300){
+							console.log("RESETING:",index[x])
+							index[x].complete = false
+							index[x].working = false
+							index[x].workingStart = 0
+						}
+					}
+
+					if (index[x].complete){
+						complete++
+					}
+
+
+
+				}
+
+				var wString = ""
+				for (var x in workers){
+					wString = wString + x + ":" + workers[x].complete + "|"
+				}
+
+
+
+				process.stdout.clearLine()
+				process.stdout.cursorTo(0)
+				process.stdout.write( complete + "/" + totalRecords + "(" + Math.floor(complete/totalRecords*100) + ") " + wString )
+
+				workingOnStats = false
+
+
+			},2500)
+
+
+
+
+		})
+
+
+
+		stream.pipe(parser).pipe(processData)
 
 	})
-
-
-
-	stream.pipe(parser).pipe(processData)
-
-
 
 
 
@@ -217,13 +244,15 @@ if (cluster.isMaster) {
 
 } else {
 
+
+
+
 	var activeRecord = false
 	var foundSomething = false
 	var finished = false
 	var results = []
 
 
-	var pathToCatalogClassifyResults = config.get('Storage')['extracts']['catalogClassifyResults']
 
 
 	//kick off the first record
