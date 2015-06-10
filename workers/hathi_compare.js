@@ -17,7 +17,7 @@ var pathToHathiMappingResultsCompare = "/Users/matt/Downloads/hathi_results.txt"
 var stream = fs.createReadStream(pathToHathiMappingResults, {encoding: 'utf8'})
 var parser = jsonStream.parse('*')
 var indexOclc = {},indexIsbn = {},indexIssn = {}
-var totalRecords = 0
+var totalRecords = 0, totalVols = 0
 
 //this is the function that will be called for each data line in the file
 var processData = es.mapSync(function (data) {
@@ -244,6 +244,7 @@ parser.on('end', function(obj) {
 		if (matchedVolume.length>0) {
 
 			totalRecordsAdded++
+			totalVols = totalVols + matchedVolume.length
 
 			bIndex["b" + data.bnumber] = true
 
@@ -355,11 +356,16 @@ parser.on('end', function(obj) {
 
 
 	parserCatalog.on('end', function(obj) {
+
 		rs.push(null)
 		rsError.push(null)
 
 		console.log("\nDone\n")
-		console.log(Object.keys(bIndex).length)
+		console.log("index keys:", Object.keys(bIndex).length)
+		console.log("counter:",totalRecordsAdded)
+		console.log("total vosl.:",totalVols)
+
+
 	})
 
 

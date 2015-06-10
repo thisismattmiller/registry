@@ -6,14 +6,14 @@ var config = require("config"),
     lineByLineReader = require('line-by-line')
 
 
-var billingsExtract = config.get('Storage')['extracts']['billingsStarDump']
-var billingsExtractResults = config.get('Storage')['extracts']['billingsStarDump'] + ".tsv"
+var billingsExtract = config.get('Storage')['extracts']['billingsMainDump']
+var billingsExtractResults = config.get('Storage')['extracts']['billingsMainDump'] + ".tsv"
 
 
 
 
 //find if the line has a billings on it
-var billingsLineRegExp = new RegExp(/\.{10,}.*?\t(.+\s|.+[A-Z])/)
+var billingsLineRegExp = new RegExp(/\.{10,}\s*(.*?)\s/)
 var titleRegExp = new RegExp(/(.*?)\.{5}/)
 
 
@@ -30,7 +30,7 @@ lr.on('line', function (line) {
 
 	lr.pause()
 
-	lines.push(line)
+	lines.push(line.replace("	.	",'. '))
 
 	setTimeout(function(){
 		lr.resume()
@@ -47,7 +47,8 @@ lr.on('end', function (x) {
 
 	for (var x in lines){
 
-		var line = lines[x]
+		var line = lines[x] + "\n"
+
 
 		previousLineIsPartOfRecord[x] = false
 
@@ -61,24 +62,26 @@ lr.on('end', function (x) {
 
 		var m = line.match(billingsLineRegExp)
 
-		isTitle[(parseInt(x))]= false
+		isTitle[x]= false
 
 		if (m){
+
 			m =  m[1]
 			m = m.replace(/\./g,"").replace(/"/g,"").trim()
 			if (m == '') m = false
-		}
 
-		//just get the first and endish lines out of here, nothing interesting
-		if (x < 6 || x >= 4085) continue
+
+		}
 
 		if (m){
 
-			isTitle[(parseInt(x))]= true
+			isTitle[x]= true
 
 			var previousLineIsStart = false
+
 			//we want to see if the line above us is a continuation
 			if (!isGroupCodeLine(previousLine1)){
+
 				//is it at a higher indent than us
 				if (indetLevel(previousLine1) < indetLevel(line)){
 					previousLineIsStart = true
@@ -87,8 +90,8 @@ lr.on('end', function (x) {
 					if (previousLine1.trim().charAt(previousLine1.trim().length-1) == '-' || previousLine1.trim().charAt(previousLine1.trim().length-1) == ','){
 						previousLineIsStart = true
 					}else{
-						//Does it not have a * meaning it is likely a see also
-						if (previousLine1.search(/\*/)==-1){
+						//Does it not have some uppercase things meaning it is likely a see also
+						if (previousLine1.search(/[A-Z]{2}/)==-1){
 							previousLineIsStart = true
 						}
 					}
@@ -98,9 +101,11 @@ lr.on('end', function (x) {
 			if (previousLineIsStart){
 				previousLineIsPartOfRecord[x] = true
 			}
+
+
+
 		}
 	}
-
 
 
 	//loop again now that we know all the titles and where they start
@@ -133,9 +138,6 @@ lr.on('end', function (x) {
 
 			//console.log(previousLine1, "<<")
 			//console.log(line, "<")
-
-
-
 
 			title = previousLine1.trim()
 
@@ -186,7 +188,6 @@ lr.on('end', function (x) {
 
 				var newX = parseInt(x)+y;
 
-				//console.log(y)
 
 				if (isTitle[newX] || previousLineIsPartOfRecord[newX]){
 
@@ -197,6 +198,8 @@ lr.on('end', function (x) {
 
 					break
 				}else if (indetLevel(lines[newX]) < indetLevel(line) ){
+
+
 					break
 				}else{
 					possibleNotes.push(lines[newX])
@@ -205,26 +208,28 @@ lr.on('end', function (x) {
 
 			var notes = ""
 
+
 			for (var z in possibleNotes){
-				var note = possibleNotes[z].trim()
 
-				if (note.charAt(note.length-1) == '-'){
-					note = note.substr(0,note.length-1)
-				}else{
-					note = note + " "
+				if (possibleNotes[z]){
+					var note = possibleNotes[z].trim()
+
+					if (note.charAt(note.length-1) == '-'){
+						note = note.substr(0,note.length-1)
+					}else{
+						note = note + " "
+					}
+
+					notes = notes  + note
 				}
-
-				notes = notes  + note
 
 			}
 
 
-			//console.log(notes)
-
 			if (results[code]){
 
 				//if it is a primary code don't do it but grab the notes
-				if (code.length == 2){
+				if (code.length == 1){
 
 					if (notes.length > results[code].notes.length) results[code].notes = notes
 
@@ -236,8 +241,8 @@ lr.on('end', function (x) {
 					// console.log(code, title, notes)
 					// console.log("\n")
 
-					//do it
-					results[code] = {code: code, title: title, notes: notes}
+					// //do(n't) it
+					// results[code] = {code: code, title: title, notes: notes}
 
 				}
 
@@ -263,7 +268,7 @@ lr.on('end', function (x) {
 
 		if (code.search("-") == -1){
 
-			var newCode = code.replace("*",'')
+			var newCode = code
 
 			var hierarchy = []
 			//whatever...
@@ -298,6 +303,8 @@ lr.on('end', function (x) {
 				hierarchy.push(newCode.charAt(0) + newCode.charAt(1) + newCode.charAt(2) + newCode.charAt(3) + newCode.charAt(4))
 			}
 
+			if (newCode.length > 4) console.log(newCode)
+
 
 			var line = ""
 
@@ -305,7 +312,7 @@ lr.on('end', function (x) {
 
 			for (var x in hierarchy){
 
-				if (!results['*' + hierarchy[x]]){
+				if (!results[hierarchy[x]]){
 
 					//console.log("No Parent",hierarchy[x] )
 					//console.log(hierarchy)
@@ -314,7 +321,7 @@ lr.on('end', function (x) {
 
 
 				}else{
-					line = line + results['*' + hierarchy[x]].title + "\t"
+					line = line + results[hierarchy[x]].title + "\t"
 				}
 			}
 
@@ -355,8 +362,9 @@ lr.on('end', function (x) {
 
 
 var isGroupCodeLine = function(line){
-
-	if (line.match(billingsLineRegExp)) return true
+	if (line) {
+		if (line.match(billingsLineRegExp)) return true
+	}
 
 	return false
 

@@ -91,7 +91,10 @@ if (cluster.isMaster) {
 
 		parser.on('end', function(obj) {
 
-			console.log("\n\nGoing to work on:",Object.keys(index).length + " Records")
+
+			totalRecords = Object.keys(index).length
+
+			console.log("\n\nGoing to work on:", totalRecords, " Records")
 
 			var buildWorker = function(){
 

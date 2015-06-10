@@ -33,7 +33,6 @@ glob(pathToCatalogClassifyResults + "*.json", {}, function (er, files) {
 
 			allData.on("finish",function(){
 
-				console.log(file)
 				callback()
 
 			})
